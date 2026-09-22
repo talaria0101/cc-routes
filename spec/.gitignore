@@ -1,0 +1,2 @@
+# local rollback artifact; history already keeps priors
+*.prev.json
