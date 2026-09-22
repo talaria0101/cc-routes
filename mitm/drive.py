@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -162,10 +163,16 @@ def run_one(runner, cli, args, timeout, logpath, homedir, bindir, bindir_shim):
         f.write(out or b"")
     with open(logpath + ".stderr.txt", "wb") as f:
         f.write(err or b"")
+    tail = (out or b"").decode("utf-8", "replace")[-500:]
+    # Scrub OAuth device-flow artifacts from the committed manifest tail
+    # (raw stdout stays local and gitignored). Expired or not, codes
+    # never belong in the repo.
+    tail = re.sub(r"\b[A-Z0-9]{4,5}-[A-Z0-9]{4,5}\b", "***", tail)
+    tail = re.sub(r"device[_-]?code[\"']?\s*[:=]\s*[\"']?[0-9a-f]{8,}",
+                  "device_code=***", tail, flags=re.I)
     return {"args": args, "rc": rc, "seconds": dt,
             "log": os.path.basename(logpath),
-            "stdout_tail": (out or b"").decode(
-                "utf-8", "replace")[-500:]}
+            "stdout_tail": tail}
 
 
 def main():
