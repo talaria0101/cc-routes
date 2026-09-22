@@ -22,6 +22,7 @@ import glob
 import json
 import os
 import re
+import time
 import urllib.parse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -273,6 +274,10 @@ def report_only(args):
         out_eps = json.load(open(os.path.join(cap, "endpoints.json")))
         spawns_j = json.load(open(os.path.join(cap, "spawns.json")))
         tap_summary = json.load(open(os.path.join(cap, "tap-hosts.json")))
+        try:
+            summary = json.load(open(os.path.join(cap, "summary.json")))
+        except FileNotFoundError:
+            summary = {}
     except FileNotFoundError as e:
         print(f"report-only needs curated JSONs: {e}", flush=True)
         return 2
@@ -283,8 +288,12 @@ def report_only(args):
             "args": set(s.get("args_sample", []))}
     unknown = [t["host"] for t in tap_summary if not t.get("known")]
     new = [e for e in out_eps if is_new_report_only(e)]
-    total_events = sum(r.get("events", 0)
-                       for r in manifest.get("runs", []))
+    # Totals come from the committed summary (live-filtered counts), not
+    # from re-summing manifest line counts, which count unfiltered lines
+    # and would print a different number than the live run recorded.
+    total_events = summary.get("total_events",
+                               sum(r.get("events", 0)
+                                   for r in manifest.get("runs", [])))
     bundle = manifest.get("cli_bundle", "n/a")
     md_s, tx_s = build_reports(manifest, out_eps, spawns, new,
                                total_events, bundle, tap_summary, unknown)
@@ -512,6 +521,18 @@ def main():
                               "args_sample": sorted(v["args"])[:6]}
                              for k, v in sorted(spawns.items())],
                             indent=2))
+    summary = {"generated_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ",
+                                                time.gmtime()),
+               "runs": n_runs, "total_events": total_events,
+               "unique_endpoints": len(out_eps),
+               "new_surface": len(new), "unique_spawns": len(spawns),
+               "tap_hosts": len(tap_hosts),
+               "unknown_hosts": sorted(unknown),
+               "cli_bundle": bundle,
+               "version": manifest.get("version"),
+               "runner": manifest.get("runner")}
+    atomic_write(os.path.join(args.captures, "summary.json"),
+                 json.dumps(summary, indent=2))
     if not args.no_report:
         md_s, tx_s = build_reports(manifest, out_eps, spawns, new,
                                    total_events, bundle, tap_summary,

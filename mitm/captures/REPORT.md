@@ -1,6 +1,6 @@
 # CLI drive report (v1.62.1, bun runner)
 
-22 runs, 175 captured events, 30 unique endpoints, 1 new surface. Window (UTC): 2026-09-22T10:46:22Z .. 2026-09-22T10:46:59Z.
+22 runs, 177 captured events, 30 unique endpoints, 1 new surface. Window (UTC): 2026-09-22T10:46:22Z .. 2026-09-22T10:46:59Z.
 Bundle driven: `/tmp/mitm-work/cli-1.62.1/package/dist/cli.mjs`.
 
 ## Runs
@@ -53,12 +53,12 @@ Bundle driven: `/tmp/mitm-work/cli-1.62.1/package/dist/cli.mjs`.
 | `GET registry.npmjs.org/@vercel/oidc/-/oidc-3.2.0.tgz` | 1 | 200 | `cmd login copilot` |
 | `GET registry.npmjs.org/ai` | 1 | 200 | `cmd login copilot` |
 | `GET registry.npmjs.org/ai/-/ai-6.0.287.tgz` | 1 | 200 | `cmd login copilot` |
-| `GET registry.npmjs.org/command-code` | 21 | 200 | `cmd --help`, `cmd --list-models`, `cmd --version`, `cmd -m no-such-model-xyz -p hi` |
+| `GET registry.npmjs.org/command-code` | 22 | 200 | `cmd --help`, `cmd --list-models`, `cmd --version`, `cmd -m no-such-model-xyz -p hi` |
 | `GET registry.npmjs.org/eventsource-parser` | 1 | 200 | `cmd login copilot` |
 | `GET registry.npmjs.org/eventsource-parser/-/eventsource-parser-3.1.1.tgz` | 1 | 200 | `cmd login copilot` |
 | `GET registry.npmjs.org/json-schema` | 1 | 200 | `cmd login copilot` |
 | `GET registry.npmjs.org/json-schema/-/json-schema-0.4.0.tgz` | 1 | 200 | `cmd login copilot` |
-| `GET registry.npmjs.org/npm` | 19 | 200 | `cmd --help`, `cmd --list-models`, `cmd --version`, `cmd -m no-such-model-xyz -p hi` |
+| `GET registry.npmjs.org/npm` | 20 | 200 | `cmd --help`, `cmd --list-models`, `cmd --version`, `cmd -m no-such-model-xyz -p hi` |
 | `GET registry.npmjs.org/undici` | 1 | 200 | `cmd login copilot` |
 | `GET registry.npmjs.org/undici/-/undici-6.28.1.tgz` | 1 | 200 | `cmd login copilot` |
 | `GET registry.npmjs.org/zod` | 1 | 200 | `cmd login copilot` |

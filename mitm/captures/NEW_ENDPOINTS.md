@@ -1,7 +1,7 @@
 # Runtime-observed endpoints missing from static tables
 
 Bundle: `/tmp/mitm-work/cli-1.62.1/package/dist/cli.mjs`.
-Observed 30 unique endpoints (175 events); 1 not covered by static/spec tables.
+Observed 30 unique endpoints (177 events); 1 not covered by static/spec tables.
 
 ## `POST github.com/login/device/code`
 - hits: 1, statuses: [200]

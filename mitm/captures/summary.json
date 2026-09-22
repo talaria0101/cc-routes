@@ -1,0 +1,13 @@
+{
+  "generated_utc": "2026-09-22T10:50:44Z",
+  "runs": 22,
+  "total_events": 177,
+  "unique_endpoints": 30,
+  "new_surface": 1,
+  "unique_spawns": 21,
+  "tap_hosts": 6,
+  "unknown_hosts": [],
+  "cli_bundle": "/tmp/mitm-work/cli-1.62.1/package/dist/cli.mjs",
+  "version": "1.62.1",
+  "runner": "bun"
+}

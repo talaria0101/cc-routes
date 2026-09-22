@@ -297,7 +297,7 @@
     "endpoint": "GET registry.npmjs.org/command-code",
     "host": "registry.npmjs.org",
     "path": "/command-code",
-    "hits": 21,
+    "hits": 22,
     "statuses": [
       200
     ],
@@ -321,6 +321,7 @@
       "skills list",
       "status",
       "taste --help",
+      "taste list",
       "update --check-only",
       "whoami"
     ],
@@ -392,7 +393,7 @@
     "endpoint": "GET registry.npmjs.org/npm",
     "host": "registry.npmjs.org",
     "path": "/npm",
-    "hits": 19,
+    "hits": 20,
     "statuses": [
       200
     ],
@@ -414,6 +415,7 @@
       "skills list",
       "status",
       "taste --help",
+      "taste list",
       "update --check-only",
       "whoami"
     ],
