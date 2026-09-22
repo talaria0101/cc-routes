@@ -53,7 +53,6 @@ from __future__ import annotations
 
 import argparse
 import datetime
-import html as htmlmod
 import io
 import json
 import os
@@ -104,19 +103,50 @@ STATIC_CANDIDATES = [
     ("www", "/api/v1/models"),
 ]
 
-INFERENCE_POST_PROBES = {
-    "/provider/v1/chat/completions": (
-        {"model": "deepseek/deepseek-v4-flash",
-         "messages": [{"role": "user", "content": "hi"}]}),
-    "/provider/v1/responses": (
-        {"model": "deepseek/deepseek-v4-flash", "input": "hi"}),
-    "/provider/v1/messages": (
-        {"model": "claude-sonnet-4-6", "max_tokens": 5,
-         "messages": [{"role": "user", "content": "hi"}]}),
-    "/provider/v1/systemone": (
-        {"model": "typesafe/jev", "state": "x",
-         "questions": {"a": {"type": "noul", "instructions": "x?"}}}),
-}
+# Fallback probe models (used only when the live registry cannot be read;
+# in that case validation refuses the overwrite anyway). Live runs pick
+# probe models from the fetched registry (pick_probe_models), so a model
+# rename/removal surfaces as drift instead of a misleading 404 verdict.
+FALLBACK_CHAT_MODEL = "deepseek/deepseek-v4-flash"
+FALLBACK_MSG_MODEL = "claude-sonnet-4-6"
+
+
+def pick_probe_models():
+    """Build auth-gate POST bodies from the live registry snapshot.
+
+    Returns {path: body}. Picks the first registry id advertising each
+    wire format via supported_endpoints, so probes stay endpoint-correct
+    when models churn. Falls back to hardcoded ids (which then likely
+    404, and the missing model-listing gate refuses the write)."""
+    chat_m, msg_m = FALLBACK_CHAT_MODEL, FALLBACK_MSG_MODEL
+    try:
+        js = json.load(open(os.path.join(CORPUS, "provider-models.json")))
+        for m in js.get("data", []):
+            eps = m.get("supported_endpoints", []) or []
+            if chat_m == FALLBACK_CHAT_MODEL and \
+                    "/chat/completions" in eps:
+                chat_m = m["id"]
+            if msg_m == FALLBACK_MSG_MODEL and "/messages" in eps:
+                msg_m = m["id"]
+            if chat_m != FALLBACK_CHAT_MODEL and \
+                    msg_m != FALLBACK_MSG_MODEL:
+                break
+    except Exception:
+        pass
+    return {
+        "/provider/v1/chat/completions": (
+            {"model": chat_m,
+             "messages": [{"role": "user", "content": "hi"}]}),
+        "/provider/v1/responses": (
+            {"model": chat_m, "input": "hi"}),
+        "/provider/v1/messages": (
+            {"model": msg_m, "max_tokens": 5,
+             "messages": [{"role": "user", "content": "hi"}]}),
+        "/provider/v1/systemone": (
+            {"model": "typesafe/jev", "state": "x",
+             "questions": {"a": {"type": "noul",
+                                     "instructions": "x?"}}}),
+    }
 
 PATH_RE = re.compile(
     r'"/(?:provider|internal|alpha|beta)(?:/[A-Za-z0-9/_\-:{}.]+)?"')
@@ -170,15 +200,6 @@ def try_json(text):
         return json.loads(text)
     except Exception:
         return None
-
-
-def strip_tags(page_html):
-    t = re.sub(r"<script.*?</script>", " ", page_html,
-               flags=re.S | re.I)
-    t = re.sub(r"<style.*?</style>", " ", t, flags=re.S | re.I)
-    t = re.sub(r"<[^>]+>", "\n", t)
-    t = htmlmod.unescape(t)
-    return [l.strip() for l in t.splitlines() if l.strip()]
 
 
 # ---- discovery -----------------------------------------------------------
@@ -369,6 +390,8 @@ def build_spec(probe_results, discovery):
         if d.get("multiplier") == 0:
             for m in d.get("model_ids", []):
                 free_by_deal.add(norm_mid(m))
+    prices = scrape_prices_from_corpus()
+    cross = cross_check_deal_rates(deals, prices)
     models, free_models = [], []
     if models_entry:
         try:
@@ -388,7 +411,6 @@ def build_spec(probe_results, discovery):
             free_models = [m["id"] for m in models if m["free"]]
         except Exception as e:
             models_entry["detail"]["spec_error"] = str(e)
-    prices = scrape_prices_from_corpus()
     interesting = [r for r in probe_results if r["flags"].get(
         "model_listing") or r["flags"].get("prices") or r["flags"].get(
         "deals")]
@@ -410,6 +432,7 @@ def build_spec(probe_results, discovery):
         "prices_n": len(prices),
         "prices_per_1m_usd": prices,
         "deals_now": deals,
+        "price_crosscheck": cross,
         "free_models": free_models,
         "auth": auth,
         "interesting_endpoints": [
@@ -431,10 +454,15 @@ def scrape_deals_from_corpus():
             js = open(os.path.join(CORPUS, fn)).read()
         except Exception:
             continue
-        for m in re.finditer(
-                r'\{id:"([^"]+)",title:"([^"]+)"(.*?)docsAnchor:"([^"]+)"',
-                js, re.S):
+        spans = list(re.finditer(
+            r'\{id:"([^"]+)",title:"([^"]+)"(.*?)docsAnchor:"([^"]+)"',
+            js, re.S))
+        for si, m in enumerate(spans):
             chunk = m.group(0)
+            # listRates sits AFTER docsAnchor in the object, so scan the
+            # window up to the next deal for it.
+            tail = js[m.end():spans[si + 1].start()
+                      if si + 1 < len(spans) else len(js)]
             mult = re.search(r"multiplier:([0-9.]+|!0)", chunk)
             disc = re.search(r"discountPercent:([0-9]+)", chunk)
             exp = re.search(r'expires:"([^"]+)"', chunk)
@@ -453,7 +481,59 @@ def scrape_deals_from_corpus():
                 "expires": exp.group(1) if exp else None,
                 "ends_when": end.group(1) if end else None,
             })
+            lr = re.search(r"listRates:\{([^}]*\{[^}]*\}[^}]*)\}",
+                           tail)
+            if lr:
+                rates = {}
+                for rm in re.finditer(
+                        r'"([^"]+)":\{input:([0-9.]+),output:([0-9.]+),'        r"cacheRead:([0-9.]+)\}", lr.group(1)):
+                    rates[rm.group(1)] = {
+                        "input": float(rm.group(2)),
+                        "output": float(rm.group(3)),
+                        "cache_read": float(rm.group(4))}
+                if rates:
+                    deals[-1]["list_rates"] = rates
     return deals
+
+
+def _num(s):
+    try:
+        return float(str(s).replace("$", "").strip())
+    except Exception:
+        return None
+
+
+def cross_check_deal_rates(deals, prices):
+    """Cross-check deals-bundle listRates vs pricing-table was-rates.
+
+    Two independent website sources for the same pre-deal list price.
+    Returns {agree: [...], mismatch: [...], unchecked: [...]}; mismatches
+    mean one of the two sources drifted and need a human look."""
+    by_norm = {norm_mid(n): (n, p) for n, p in prices.items()}
+    out = {"agree": [], "mismatch": [], "unchecked": []}
+    for d in deals:
+        for mid, rates in (d.get("list_rates") or {}).items():
+            hit = by_norm.get(norm_mid(mid))
+            if not hit or not hit[1].get("was_per_1m"):
+                out["unchecked"].append(
+                    {"deal": d["id"], "model": mid,
+                     "reason": "no was-rates in pricing table"})
+                continue
+            name, p = hit
+            pairs = [("input", rates["input"], p["was_per_1m"][0]),
+                     ("output", rates["output"], p["was_per_1m"][1]),
+                     ("cache_read", rates["cache_read"],
+                      p["was_per_1m"][2])]
+            for field, a, b in pairs:
+                bnum = _num(b)
+                if bnum is None or abs(a - bnum) > 1e-9:
+                    out["mismatch"].append(
+                        {"deal": d["id"], "model": mid, "field": field,
+                         "bundle_list": a, "table_was": b})
+                else:
+                    out["agree"].append(
+                        {"deal": d["id"], "model": mid, "field": field})
+    return out
 
 
 PRICE_CTX = {"256K", "262K", "1M", "1.1M", "500K", "200K",
@@ -549,6 +629,10 @@ def deal_status(d, generated_utc):
             else f"EXPIRED {exp} but still shipped")
 
 
+def cell(v):
+    return str(v).replace("|", "/")
+
+
 def render_markdown(spec):
     L = []
     A = L.append
@@ -594,7 +678,7 @@ def render_markdown(spec):
                        else f"{ctx / 1000000:.1f}M")
             elif ctx >= 1000:
                 ctx = f"{ctx // 1000}K"
-        A(f"| `{m.get('id')}` | {m.get('name')} | {ctx} | {eps} | "
+        A(f"| `{m.get('id')}` | {cell(m.get('name'))} | {ctx} | {eps} | "
           f"{'yes' if m.get('free') else ''} |")
     A("")
     A("## Prices per 1M tokens (USD, at cost)")
@@ -607,7 +691,7 @@ def render_markdown(spec):
     for name, p in spec.get("prices_per_1m_usd", {}).items():
         was = (" (was " + "/".join(p["was_per_1m"]) + ")"
                if p.get("was_per_1m") else "")
-        A(f"| {name} | {p.get('context')} | {p.get('input_per_1m')} | "
+        A(f"| {cell(name)} | {p.get('context')} | {p.get('input_per_1m')} | "
           f"{p.get('output_per_1m')} | {p.get('cache_read_per_1m')} | "
           f"{p.get('cache_write_per_1m')} | "
           f"{p.get('deal_badge', '')}{was} |")
@@ -617,7 +701,7 @@ def render_markdown(spec):
     for d in deals:
         mult = d.get("multiplier")
         eff = (f"~{1 / mult:.1f}x further" if mult else "?")
-        A(f"### {d.get('title')}")
+        A(f"### {cell(d.get('title'))}")
         A(f"- Discount: {d.get('discount_percent')}% off "
           f"(multiplier {mult}, every credit goes {eff}).")
         A(f"- Models: "
@@ -625,6 +709,23 @@ def render_markdown(spec):
         A(f"- Status: {deal_status(d, gen)}.")
         A(f"- Docs anchor: `#{d.get('docs_anchor')}`.")
         A("")
+    A("## Price cross-check (deals bundle vs pricing table)")
+    A("")
+    cc = spec.get("price_crosscheck", {})
+    agree, mism = cc.get("agree", []), cc.get("mismatch", [])
+    unchk = cc.get("unchecked", [])
+    A(f"Two independent website sources for the same pre-deal list "
+      f"price: {len(agree)} fields agree, {len(mism)} mismatch, "
+      f"{len(unchk)} unchecked (no table was-rates).")
+    for m in mism:
+        A(f"- MISMATCH `{m['model']}` ({m['deal']}) {m['field']}: "
+          f"bundle {m['bundle_list']} vs table {m['table_was']} - one "
+          f"source drifted, needs a human look.")
+    for u in unchk:
+        A(f"- unchecked `{u['model']}` ({u['deal']}): {u['reason']}.")
+    if not mism and not unchk:
+        A("- All deal list-rates agree with the pricing table.")
+    A("")
     A("## Auth gates (probed live, no credentials)")
     A("")
     A("| Endpoint | Verdict |")
@@ -721,6 +822,15 @@ def render_text(spec):
           f"models: {', '.join(d.get('model_ids', []))}, "
           f"status: {deal_status(d, gen)}")
     A("")
+    A("PRICE CROSS-CHECK")
+    cc = spec.get("price_crosscheck", {})
+    A(f"  agree={len(cc.get('agree', []))} "
+      f"mismatch={len(cc.get('mismatch', []))} "
+      f"unchecked={len(cc.get('unchecked', []))}")
+    for m in cc.get("mismatch", []):
+        A(f"  MISMATCH {m['model']} {m['field']}: bundle {m['bundle_list']} "
+          f"vs table {m['table_was']}")
+    A("")
     A("AUTH GATES")
     for url, verdict in spec.get("auth", {}).items():
         A(f"  {url} -> {verdict}")
@@ -729,18 +839,27 @@ def render_text(spec):
 
 def norm_mid(mid):
     """Normalise a model id for cross-source joins: short name, lower,
-    no :free/-free suffix, no dashes."""
+    no :free/-free suffix, no dashes/spaces/dots."""
     s = str(mid or "").split("/")[-1].lower()
     for suf in (":free", "-free"):
         if s.endswith(suf):
             s = s[: -len(suf)]
-    return s.replace("-", "")
+    for ch in ("-", " ", ".", "_"):
+        s = s.replace(ch, "")
+    return s
 
 
 def atomic_write(path, data):
-    tmp = path + ".tmp"
+    # pid-suffixed tmp (no clobber on concurrent runs) + fsync before
+    # rename, so a crash can never leave a half-written committed file.
+    tmp = f"{path}.tmp-{os.getpid()}"
     with open(tmp, "w") as f:
         f.write(data)
+        f.flush()
+        try:
+            os.fsync(f.fileno())
+        except OSError:
+            pass
     os.replace(tmp, path)
 
 
@@ -845,8 +964,23 @@ def main():
             f.write(data or b"")
         os.replace(tmp, os.path.join(CORPUS, name))
 
+    # Fetch-cache prune (oc-routes snapshot-prune lesson): hashed asset
+    # filenames drift, so stale asset_*.js/docs_*.html would pile up and
+    # the scrapers (which glob the whole dir) would read stale + fresh
+    # together. Wipe the refetchable cache at the start of a live run;
+    # committed snapshots (*.json) are kept. If fetching then fails, the
+    # gates below refuse the snapshot overwrite instead of publishing
+    # partial data.
+    FETCH_CACHE_RES = ("asset_", "docs_2F", "cli.tgz", "cli.mjs",
+                       "npm-latest.json", "sitemap.xml")
     discovery = {}
     if not args.no_fetch_sources and not args.spec_only:
+        for fn in os.listdir(CORPUS):
+            if fn.startswith(FETCH_CACHE_RES) and ".tmp" not in fn:
+                try:
+                    os.unlink(os.path.join(CORPUS, fn))
+                except OSError:
+                    pass
         print("[1/4] sitemap ...", flush=True)
         discovery["sitemap"] = discover_sitemap(save)
         print("      urls:", len(discovery["sitemap"].get("urls", [])),
@@ -868,8 +1002,18 @@ def main():
         derrs = []
         if not (discovery.get("sitemap") or {}).get("urls"):
             derrs.append("empty sitemap (offline?)")
+        docs = discovery.get("docs") or {}
+        bad_docs = [u for u, p in (docs.get("pages") or {}).items()
+                    if p.get("status") != 200 or p.get("bytes", 0) < 50000]
+        if bad_docs:
+            derrs.append(f"docs pages failed/thin: {bad_docs} "
+                          "(bot-wall or truncated fetch?)")
+        if not (discovery.get("assets") or {}).get("assets"):
+            derrs.append("zero website JS assets (markup drift?)")
         if not (discovery.get("cli") or {}).get("version"):
             derrs.append("CLI version unresolved (registry down?)")
+        if not (discovery.get("cli") or {}).get("paths"):
+            derrs.append("zero CLI bundle paths (tarball truncated?)")
         if derrs and not args.force:
             print("REFUSING to overwrite discovery snapshot:", flush=True)
             for e in derrs:
@@ -906,13 +1050,22 @@ def main():
 
     probe_results = []
     if not args.spec_only:
+        # Models endpoint first: its snapshot feeds live probe-model
+        # picking, so auth-gate verdicts stay endpoint-correct on churn.
+        model_url = API_HOST + "/provider/v1/models"
+        if model_url in cands:
+            r = probe(model_url, save_name="provider-models.json")
+            r["why"] = cands.pop(model_url)
+            probe_results.append(r)
+            fl = ",".join(k for k, v in r["flags"].items() if v)
+            print(f"  {r['get_status']}            {model_url} "
+                  f"[{fl or 'no-signal'}]", flush=True)
+        live_probes = pick_probe_models()
         print(f"probing {len(cands)} candidates ...", flush=True)
         for url, why in sorted(cands.items()):
             name = None
-            if url.endswith("/provider/v1/models"):
-                name = "provider-models.json"
             path = urllib.parse.urlparse(url).path
-            do_post = INFERENCE_POST_PROBES.get(path)
+            do_post = live_probes.get(path)
             r = probe(url, save_name=name, do_post=do_post)
             r["why"] = why
             probe_results.append(r)

@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-09-22T10:44:50Z",
+  "generated_utc": "2026-09-22T08:58:49Z",
   "sources": {
     "sitemap_urls": 195,
     "docs_paths": 7,
@@ -1393,14 +1393,7 @@
       ],
       "starts": null,
       "expires": null,
-      "ends_when": null,
-      "list_rates": {
-        "mimo-v2.5-pro": {
-          "input": 2.0,
-          "output": 6.0,
-          "cache_read": 0.4
-        }
-      }
+      "ends_when": null
     },
     {
       "id": "mimo-v2.5-98-off",
@@ -1413,14 +1406,7 @@
       ],
       "starts": null,
       "expires": null,
-      "ends_when": null,
-      "list_rates": {
-        "mimo-v2.5": {
-          "input": 0.8,
-          "output": 4.0,
-          "cache_read": 0.16
-        }
-      }
+      "ends_when": null
     },
     {
       "id": "laguna-s-2.1-free",
@@ -1462,48 +1448,11 @@
       "ends_when": "while it lasts"
     }
   ],
-  "price_crosscheck": {
-    "agree": [
-      {
-        "deal": "mimo-v2.5-pro-99-off",
-        "model": "mimo-v2.5-pro",
-        "field": "input"
-      },
-      {
-        "deal": "mimo-v2.5-pro-99-off",
-        "model": "mimo-v2.5-pro",
-        "field": "output"
-      },
-      {
-        "deal": "mimo-v2.5-pro-99-off",
-        "model": "mimo-v2.5-pro",
-        "field": "cache_read"
-      },
-      {
-        "deal": "mimo-v2.5-98-off",
-        "model": "mimo-v2.5",
-        "field": "input"
-      },
-      {
-        "deal": "mimo-v2.5-98-off",
-        "model": "mimo-v2.5",
-        "field": "output"
-      },
-      {
-        "deal": "mimo-v2.5-98-off",
-        "model": "mimo-v2.5",
-        "field": "cache_read"
-      }
-    ],
-    "mismatch": [],
-    "unchecked": []
-  },
   "free_models": [
     "poolside/laguna-s-2.1-free",
     "inclusionai/ling-3.0-flash-sante:free"
   ],
   "auth": {
-    "https://api.commandcode.ai/provider/v1/models": "public (200 without token)",
     "https://api.commandcode.ai/alpha/whoami": "auth-required (401 without token)",
     "https://api.commandcode.ai/internal/models": "auth-required (401 without token)",
     "https://api.commandcode.ai/provider": "unreachable/other (404)",
@@ -1511,6 +1460,7 @@
     "https://api.commandcode.ai/provider/v1/chat/completions": "auth-required (401 without token)",
     "https://api.commandcode.ai/provider/v1/deals": "unreachable/other (404)",
     "https://api.commandcode.ai/provider/v1/messages": "auth-required (401 without token)",
+    "https://api.commandcode.ai/provider/v1/models": "public (200 without token)",
     "https://api.commandcode.ai/provider/v1/models/pricing": "unreachable/other (404)",
     "https://api.commandcode.ai/provider/v1/pricing": "unreachable/other (404)",
     "https://api.commandcode.ai/provider/v1/responses": "auth-required (401 without token)",
@@ -1548,19 +1498,6 @@
     }
   ],
   "all_probed": [
-    {
-      "url": "https://api.commandcode.ai/provider/v1/models",
-      "get": 200,
-      "post": null,
-      "flags": {
-        "model_listing": true,
-        "prices": false,
-        "deals": false,
-        "free_models": true,
-        "auth_required": false,
-        "reachable_unauth": true
-      }
-    },
     {
       "url": "https://api.commandcode.ai/alpha/whoami",
       "get": 401,
@@ -1650,6 +1587,19 @@
         "free_models": false,
         "auth_required": true,
         "reachable_unauth": false
+      }
+    },
+    {
+      "url": "https://api.commandcode.ai/provider/v1/models",
+      "get": 200,
+      "post": null,
+      "flags": {
+        "model_listing": true,
+        "prices": false,
+        "deals": false,
+        "free_models": true,
+        "auth_required": false,
+        "reachable_unauth": true
       }
     },
     {

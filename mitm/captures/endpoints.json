@@ -3,7 +3,7 @@
     "endpoint": "GET api.commandcode.ai/alpha/whoami",
     "host": "api.commandcode.ai",
     "path": "/alpha/whoami",
-    "hits": 9,
+    "hits": 10,
     "statuses": [
       401
     ],
@@ -16,6 +16,7 @@
       "login openai",
       "mcp list",
       "mods list",
+      "taste list",
       "update --check-only"
     ],
     "in_static_bundle": true,
@@ -296,7 +297,7 @@
     "endpoint": "GET registry.npmjs.org/command-code",
     "host": "registry.npmjs.org",
     "path": "/command-code",
-    "hits": 22,
+    "hits": 21,
     "statuses": [
       200
     ],
@@ -320,7 +321,6 @@
       "skills list",
       "status",
       "taste --help",
-      "taste list",
       "update --check-only",
       "whoami"
     ],
@@ -392,7 +392,7 @@
     "endpoint": "GET registry.npmjs.org/npm",
     "host": "registry.npmjs.org",
     "path": "/npm",
-    "hits": 18,
+    "hits": 19,
     "statuses": [
       200
     ],
@@ -400,19 +400,20 @@
       "--help",
       "--list-models",
       "--version",
+      "-m no-such-model-xyz -p hi",
+      "-p say ok --no-session",
       "auth login",
       "info",
       "login",
       "login anthropic",
-      "login copilot",
-      "login openai",
       "mcp --help",
       "mcp list",
       "mods --help",
       "mods list",
+      "skills --help",
       "skills list",
       "status",
-      "taste list",
+      "taste --help",
       "update --check-only",
       "whoami"
     ],

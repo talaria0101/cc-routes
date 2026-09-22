@@ -200,8 +200,11 @@ TRANSPORT_IPS = {"169.254.169.1"}
 
 
 def parse_netlogs(capdir):
-    """Merge per-run CC_NETLOG files: host -> {runs, evs, comms}."""
-    hosts = {}
+    """Merge per-run CC_NETLOG files.
+
+    Returns (hosts, execs, files): host -> {runs, evs, comms, hits},
+    (exec_path, argv_str) -> {runs, hits}."""
+    hosts, execs = {}, {}
     files = 0
     for path in sorted(glob.glob(os.path.join(capdir, "*.net.log"))):
         files += 1
@@ -216,6 +219,15 @@ def parse_netlogs(capdir):
             except json.JSONDecodeError:
                 continue
             ev, d = r.get("ev"), r.get("d", "")
+            if ev == "exec":
+                # exec lines carry top-level path/argv fields
+                # (written raw, not inside "d").
+                argv = " ".join(r.get("argv", [])[:3])[:100]
+                k = (r.get("path", "?"), argv)
+                s = execs.setdefault(k, {"runs": set(), "hits": 0})
+                s["hits"] += 1
+                s["runs"].add(run)
+                continue
             host = None
             if ev in ("dns", "sni"):
                 host = d.split(":")[0].lower()
@@ -234,13 +246,18 @@ def parse_netlogs(capdir):
             h["runs"].add(run)
             h["evs"].add(ev)
             h["comms"].add(r.get("comm", "?"))
-    return hosts, files
+    return hosts, execs, files
 
 
 def atomic_write(path, data):
-    tmp = path + ".tmp"
+    tmp = f"{path}.tmp-{os.getpid()}"
     with open(tmp, "w") as f:
         f.write(data)
+        f.flush()
+        try:
+            os.fsync(f.fileno())
+        except OSError:
+            pass
     os.replace(tmp, path)
 
 
@@ -393,7 +410,17 @@ def main():
             "auth_gate_observed": e["auth_401"],
         })
     # ---- netlog tap merge + host allowlist verdict ----
-    tap_hosts, tap_files = parse_netlogs(args.captures)
+    tap_hosts, tap_execs, tap_files = parse_netlogs(args.captures)
+    # OS-level exec events join the spawn table (call=execve): they catch
+    # non-node children (git, tput, npm, sh) the JS hook cannot see.
+    run_of_short = {os.path.splitext(k)[0]: v for k, v in run_of.items()}
+    for (path, argv), v in tap_execs.items():
+        k = ("execve", path + (" " + argv if argv else ""))
+        s = spawns.setdefault(k, {"hits": 0, "runs": set(),
+                                   "args": set()})
+        s["hits"] += v["hits"]
+        s["runs"].update(" ".join(run_of_short.get(r, [r]))
+                           for r in v["runs"])
     hook_hosts = {e["host"] for e in out_eps}
     blind = {h: v for h, v in tap_hosts.items()
              if h not in hook_hosts and h not in TRANSPORT_IPS}
@@ -491,13 +518,16 @@ def main():
                                    unknown)
         atomic_write(os.path.join(args.captures, "REPORT.md"), md_s)
         atomic_write(os.path.join(args.captures, "REPORT.txt"), tx_s)
-    # Exit contract (mirrors oc-routes): 0 clean, 1 unknown hosts (needs a
-    # reason before joining the allowlist), 2 validation refusal (above).
-    rc = 1 if unknown else 0
+    # Exit contract: 0 whenever curated outputs were written (the unknown-
+    # host verdict lives in NEW_ENDPOINTS.md + REPORT, it must not block a
+    # refresh the way oc-routes learned); 2 only on validation refusal.
+    if unknown:
+        print(f"VERDICT: {len(unknown)} unknown host(s) need a reason "
+              "before joining KNOWN_HOSTS: "
+              f"{sorted(unknown)}", flush=True)
     print(f"events: {total_events}, unique endpoints: {len(out_eps)}, "
           f"new: {len(new)}, unique spawns: {len(spawns)}, "
-          f"tap hosts: {len(tap_hosts)} ({len(unknown)} unknown) "
-          f"-> exit {rc}")
+          f"tap hosts: {len(tap_hosts)} ({len(unknown)} unknown)")
     for e in out_eps:
         print(f"  {e['hits']:3}  {e['endpoint']:80} "
               f"{e['statuses']}")
@@ -505,7 +535,7 @@ def main():
     for (call, cmd), v in sorted(spawns.items()):
         print(f"  {v['hits']:3}  {call:10} {cmd[:90]} "
               f"[{', '.join(sorted(v['runs'])[:4])}]")
-    return rc
+    return 0
 
 
 if __name__ == "__main__":

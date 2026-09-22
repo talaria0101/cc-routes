@@ -13,7 +13,7 @@
   },
   {
     "host": "api.axiom.co",
-    "hits": 14,
+    "hits": 13,
     "evidence": [
       "dns"
     ],
@@ -25,12 +25,12 @@
       "run09-login-copilot",
       "run10-login-anthropic"
     ],
-    "known": false,
+    "known": true,
     "seen_by_hook": false
   },
   {
     "host": "api.commandcode.ai",
-    "hits": 31,
+    "hits": 33,
     "evidence": [
       "connect_line",
       "sni"
@@ -61,7 +61,7 @@
   },
   {
     "host": "ingestion.claicode.com",
-    "hits": 14,
+    "hits": 13,
     "evidence": [
       "dns"
     ],
@@ -73,7 +73,7 @@
       "run09-login-copilot",
       "run10-login-anthropic"
     ],
-    "known": false,
+    "known": true,
     "seen_by_hook": false
   },
   {

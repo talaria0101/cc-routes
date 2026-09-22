@@ -1,6 +1,6 @@
 # Command Code API spec (human report)
 
-Generated (UTC): 2026-09-22T08:58:49Z. Machine-readable twin: `spec/api-spec.json`.
+Generated (UTC): 2026-09-22T10:44:50Z. Machine-readable twin: `spec/api-spec.json`.
 Sources re-resolved this run: 195 sitemap URLs, 7 docs paths, 100 website JS assets, CLI 1.62.1.
 
 ## TL;DR
@@ -228,10 +228,16 @@ Scraped from the pricing-limits table. Deal rows show current (`now`) rates; `wa
 - Status: live (while it lasts).
 - Docs anchor: `#ling-3.0-flash-sante-free`.
 
+## Price cross-check (deals bundle vs pricing table)
+
+Two independent website sources for the same pre-deal list price: 6 fields agree, 0 mismatch, 0 unchecked (no table was-rates).
+- All deal list-rates agree with the pricing table.
+
 ## Auth gates (probed live, no credentials)
 
 | Endpoint | Verdict |
 |---|---|
+| `https://api.commandcode.ai/provider/v1/models` | public (200 without token) |
 | `https://api.commandcode.ai/alpha/whoami` | auth-required (401 without token) |
 | `https://api.commandcode.ai/internal/models` | auth-required (401 without token) |
 | `https://api.commandcode.ai/provider` | unreachable/other (404) |
@@ -239,7 +245,6 @@ Scraped from the pricing-limits table. Deal rows show current (`now`) rates; `wa
 | `https://api.commandcode.ai/provider/v1/chat/completions` | auth-required (401 without token) |
 | `https://api.commandcode.ai/provider/v1/deals` | unreachable/other (404) |
 | `https://api.commandcode.ai/provider/v1/messages` | auth-required (401 without token) |
-| `https://api.commandcode.ai/provider/v1/models` | public (200 without token) |
 | `https://api.commandcode.ai/provider/v1/models/pricing` | unreachable/other (404) |
 | `https://api.commandcode.ai/provider/v1/pricing` | unreachable/other (404) |
 | `https://api.commandcode.ai/provider/v1/responses` | auth-required (401 without token) |

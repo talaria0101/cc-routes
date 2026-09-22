@@ -37,7 +37,22 @@ static int log_fd = -1;
 static int in_hook = 0;
 static char comm_name[48] = "?";
 
+static void json_escape(const char *src, char *dst, size_t cap, size_t maxin) {
+  size_t o = 0;
+  for (size_t i = 0; i < maxin && src[i] && o + 6 < cap; i++) {
+    unsigned char c = (unsigned char)src[i];
+    if (c == '"' || c == '\\') { dst[o++] = '\\'; dst[o++] = (char)c; }
+    else if (c >= 0x20 && c < 0x7f) dst[o++] = (char)c;
+    else if (c == '\n') { dst[o++] = '\\'; dst[o++] = 'n'; }
+    else if (c == '\r') { dst[o++] = '\\'; dst[o++] = 'r'; }
+    else if (c == '\t') { dst[o++] = '\\'; dst[o++] = 't'; }
+    else { o += (size_t)snprintf(dst + o, cap - o, "\\u%04x", c); }
+  }
+  dst[o] = 0;
+}
+
 static int (*real_connect)(int, const struct sockaddr *, socklen_t) = NULL;
+static int (*real_execve)(const char *, char *const[], char *const[]) = NULL;
 static int (*real_getaddrinfo)(const char *, const char *,
                                const struct addrinfo *,
                                struct addrinfo **) = NULL;
@@ -71,6 +86,7 @@ static void setup(void) {
   if (!real_getaddrinfo) real_getaddrinfo = dlsym(RTLD_NEXT, "getaddrinfo");
   if (!real_send) real_send = dlsym(RTLD_NEXT, "send");
   if (!real_write) real_write = dlsym(RTLD_NEXT, "write");
+  if (!real_execve) real_execve = dlsym(RTLD_NEXT, "execve");
 }
 
 __attribute__((constructor)) static void init(void) { setup(); }
@@ -202,4 +218,49 @@ ssize_t write(int fd, const void *buf, size_t n) {
   if (!real_write) setup();
   if (buf && n > 9 && !in_hook) scan_buf((const char *)buf, n);
   return real_write(fd, buf, n);
+}
+
+/* execve: log every process spawn (path + first argv) at OS level.
+ * Catches non-node children (git, tput, npm, sh) the JS hook cannot see.
+ * Args capped: path 200, 6 args x 100 chars. Secrets risk: argv may carry
+ * tokens; the analyzer treats exec lines as spawn metadata (no bodies). */
+int execve(const char *path, char *const argv[], char *const envp[]) {
+  if (!real_execve) setup();
+  if (!in_hook) {
+    char args[768];
+    size_t o = 0;
+    args[0] = 0;
+    if (argv) {
+      for (int i = 0; i < 6 && argv[i] && o + 4 < sizeof(args); i++) {
+        char esc[160];
+        size_t len = 0;
+        while (argv[i][len] && len < 100) len++;
+        json_escape(argv[i], esc, sizeof(esc), len > 100 ? 100 : len);
+        o += (size_t)snprintf(args + o, sizeof(args) - o, "%s\"%s\"",
+                              i ? "," : "", esc);
+      }
+    }
+    char pe[320];
+    json_escape(path ? path : "?", pe, sizeof(pe), 200);
+    /* Raw (not string-wrapped): the detail is already valid JSON, and
+     * stuffing it into emit()'s quoted "d" field would corrupt it. */
+    if (log_fd < 0 || in_hook) return real_execve(path, argv, envp);
+    in_hook = 1;
+    char line[1500];
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    int n = snprintf(line, sizeof(line),
+                     "{\"ts\":%lld,\"pid\":%d,\"comm\":\"%s\","
+                     "\"ev\":\"exec\",\"path\":\"%s\","
+                     "\"argv\":[%s]}\n",
+                     (long long)ts.tv_sec, (int)getpid(), comm_name,
+                     pe, args);
+    if (n > 0) {
+      size_t w = (size_t)n < sizeof(line) ? (size_t)n : sizeof(line) - 1;
+      ssize_t r = write(log_fd, line, w);
+      (void)r;
+    }
+    in_hook = 0;
+  }
+  return real_execve(path, argv, envp);
 }

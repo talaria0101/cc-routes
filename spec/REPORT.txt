@@ -1,5 +1,5 @@
 COMMAND CODE API SPEC (human report)
-Generated (UTC): 2026-09-22T08:58:49Z. Twin: spec/api-spec.json.
+Generated (UTC): 2026-09-22T10:44:50Z. Twin: spec/api-spec.json.
 
 TL;DR
   models: 76 (live, no auth)
@@ -181,7 +181,11 @@ DEALS
   Ling 3.0 Flash: free -- 100% off, models: ling-3.0-flash-free, status: EXPIRED 2026-08-02 but still shipped
   Ling 3.0 Flash Sante: free -- 100% off, models: ling-3.0-flash-sante:free, status: live (while it lasts)
 
+PRICE CROSS-CHECK
+  agree=6 mismatch=0 unchecked=0
+
 AUTH GATES
+  https://api.commandcode.ai/provider/v1/models -> public (200 without token)
   https://api.commandcode.ai/alpha/whoami -> auth-required (401 without token)
   https://api.commandcode.ai/internal/models -> auth-required (401 without token)
   https://api.commandcode.ai/provider -> unreachable/other (404)
@@ -189,7 +193,6 @@ AUTH GATES
   https://api.commandcode.ai/provider/v1/chat/completions -> auth-required (401 without token)
   https://api.commandcode.ai/provider/v1/deals -> unreachable/other (404)
   https://api.commandcode.ai/provider/v1/messages -> auth-required (401 without token)
-  https://api.commandcode.ai/provider/v1/models -> public (200 without token)
   https://api.commandcode.ai/provider/v1/models/pricing -> unreachable/other (404)
   https://api.commandcode.ai/provider/v1/pricing -> unreachable/other (404)
   https://api.commandcode.ai/provider/v1/responses -> auth-required (401 without token)

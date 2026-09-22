@@ -15,20 +15,26 @@ shows up with proof.
   Auth material, API keys, and OAuth device artifacts are redacted
   before writing. Stdlib-only, JSONL to `$CC_MITM_LOG`.
 - `netlog.c` → `netlog.so` — LD_PRELOAD egress tap (C, no deps):
-  logs DNS intent, real connect peers, and scans handshakes for
-  `CONNECT host:port` lines + TLS SNI. Covers every binary (bun,
-  node, npm, git) with zero sockets bound. Built automatically by
-  `drive.py` when gcc exists; per-run logs to `*.net.log`.
+  logs DNS intent, real connect peers, scans handshakes for
+  `CONNECT host:port` lines + TLS SNI, and interposes `execve` to
+  log every spawn (path + argv) at OS level — catching non-node
+  children (sh, git, tput, npm, node) the JS hook cannot see.
+  Covers every binary with zero sockets bound. Built automatically
+  by `drive.py` when gcc exists; per-run logs to `*.net.log`.
 - `drive.py` — version-pinned setup (resolves latest from the npm
   registry, strips build-time-only `devDependencies`, installs prod
   deps, bootstraps portable npm if needed) then drives a 22-command
   matrix with isolated HOME, closed stdin, per-command timeouts.
-- `analyze.py` — unique `(method, host, path)` table, spawn table,
+- `analyze.py` — unique `(method, host, path)` table, spawn table
+  (JS-hook spawns merged with OS-level `execve` rows),
   tap-host merge (`tap-hosts.json`) against a `KNOWN_HOSTS` allowlist
-  (exit 1 on unknown hosts), and a diff against the static bundle
-  route table + prior spec: `captures/NEW_ENDPOINTS.md`. Validation
-  floors refuse to overwrite curated outputs on empty/partial
-  captures (exit 2, `--force` overrides); all writes are atomic.
+  (unknown hosts are a recorded verdict, never a blocked refresh),
+  and a diff against the static bundle route table + prior spec:
+  `captures/NEW_ENDPOINTS.md`. Validation floors refuse to overwrite
+  curated outputs on empty/partial captures (exit 2, `--force`
+  overrides); all writes are atomic (pid-tmp + fsync + rename).
+  `analyze.py --report-only` re-renders reports from committed JSONs
+  (fresh-clone safe, no network).
 - `pty_login.py` — experimental interactive-login driver (needs a pty;
   the sandbox has none, so it is documented, not run).
 
@@ -46,7 +52,7 @@ shows up with proof.
   404 on the public registry. They are build-time only (the bundle
   imports none at runtime), so setup strips them.
 
-## What driving the CLI exposed (v1.62.1, 22 runs, 178 events)
+## What driving the CLI exposed (v1.62.1, 22-run matrix; see captures/REPORT.md for counts)
 
 New vs the static sweep (`captures/NEW_ENDPOINTS.md`):
 

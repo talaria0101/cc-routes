@@ -1,5 +1,32 @@
 [
   {
+    "url": "https://api.commandcode.ai/provider/v1/models",
+    "flags": {
+      "model_listing": true,
+      "prices": false,
+      "deals": false,
+      "free_models": true,
+      "auth_required": false,
+      "reachable_unauth": true
+    },
+    "detail": {
+      "get": 200,
+      "models": 76,
+      "sample_ids": [
+        "claude-sonnet-5",
+        "claude-sonnet-4-6",
+        "claude-fable-5-1",
+        "claude-fable-5",
+        "claude-opus-5"
+      ],
+      "has_supported_endpoints": true
+    },
+    "get_status": 200,
+    "post_status": null,
+    "bytes": 14963,
+    "why": "static-sweep"
+  },
+  {
     "url": "https://api.commandcode.ai/alpha/whoami",
     "flags": {
       "model_listing": false,
@@ -125,33 +152,6 @@
     "get_status": 401,
     "post_status": 401,
     "bytes": 182,
-    "why": "static-sweep"
-  },
-  {
-    "url": "https://api.commandcode.ai/provider/v1/models",
-    "flags": {
-      "model_listing": true,
-      "prices": false,
-      "deals": false,
-      "free_models": true,
-      "auth_required": false,
-      "reachable_unauth": true
-    },
-    "detail": {
-      "get": 200,
-      "models": 76,
-      "sample_ids": [
-        "claude-sonnet-5",
-        "claude-sonnet-4-6",
-        "claude-fable-5-1",
-        "claude-fable-5",
-        "claude-opus-5"
-      ],
-      "has_supported_endpoints": true
-    },
-    "get_status": 200,
-    "post_status": null,
-    "bytes": 14963,
     "why": "static-sweep"
   },
   {

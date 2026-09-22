@@ -83,10 +83,252 @@
   },
   {
     "call": "execSync",
-    "cmd": "ps -p 5396 -o comm=",
+    "cmd": "ps -p 865 -o comm=",
     "hits": 1,
     "runs": [
       "info"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execve",
+    "cmd": "/bin/sh /bin/sh -c cmd --version",
+    "hits": 1,
+    "runs": [
+      "info"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execve",
+    "cmd": "/bin/sh /bin/sh -c git branch --show-current",
+    "hits": 22,
+    "runs": [
+      "--help",
+      "--list-models",
+      "--version",
+      "-m no-such-model-xyz -p hi",
+      "-p say ok --no-session",
+      "auth login",
+      "info",
+      "login",
+      "login anthropic",
+      "login copilot",
+      "login openai",
+      "mcp --help",
+      "mcp list",
+      "mods --help",
+      "mods list",
+      "skills --help",
+      "skills list",
+      "status",
+      "taste --help",
+      "taste list",
+      "update --check-only",
+      "whoami"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execve",
+    "cmd": "/bin/sh /bin/sh -c lock='/tmp/mitm-work/home-09/.commandcode/cache/providers/@byokkit/cmd-provider-copilot/.",
+    "hits": 1,
+    "runs": [
+      "login copilot"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execve",
+    "cmd": "/bin/sh /bin/sh -c npm view command-code versions --json",
+    "hits": 22,
+    "runs": [
+      "--help",
+      "--list-models",
+      "--version",
+      "-m no-such-model-xyz -p hi",
+      "-p say ok --no-session",
+      "auth login",
+      "info",
+      "login",
+      "login anthropic",
+      "login copilot",
+      "login openai",
+      "mcp --help",
+      "mcp list",
+      "mods --help",
+      "mods list",
+      "skills --help",
+      "skills list",
+      "status",
+      "taste --help",
+      "taste list",
+      "update --check-only",
+      "whoami"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execve",
+    "cmd": "/bin/sh /bin/sh -c ps -p 865 -o comm=",
+    "hits": 1,
+    "runs": [
+      "info"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execve",
+    "cmd": "/home/qaidvoid/.local/share/mise/installs/node/26.8.1/bin/node /home/qaidvoid/.local/share/mise/installs/node/26.8.1/bin/node /tmp/mitm-work/portable-npm/package/b",
+    "hits": 23,
+    "runs": [
+      "--help",
+      "--list-models",
+      "--version",
+      "-m no-such-model-xyz -p hi",
+      "-p say ok --no-session",
+      "auth login",
+      "info",
+      "login",
+      "login anthropic",
+      "login copilot",
+      "login openai",
+      "mcp --help",
+      "mcp list",
+      "mods --help",
+      "mods list",
+      "skills --help",
+      "skills list",
+      "status",
+      "taste --help",
+      "taste list",
+      "update --check-only",
+      "whoami"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execve",
+    "cmd": "/tmp/mitm-work/bin/npm npm install @byokkit/cmd-provider-copilot@0.1.1",
+    "hits": 1,
+    "runs": [
+      "login copilot"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execve",
+    "cmd": "/tmp/mitm-work/bin/npm npm view command-code",
+    "hits": 22,
+    "runs": [
+      "--help",
+      "--list-models",
+      "--version",
+      "-m no-such-model-xyz -p hi",
+      "-p say ok --no-session",
+      "auth login",
+      "info",
+      "login",
+      "login anthropic",
+      "login copilot",
+      "login openai",
+      "mcp --help",
+      "mcp list",
+      "mods --help",
+      "mods list",
+      "skills --help",
+      "skills list",
+      "status",
+      "taste --help",
+      "taste list",
+      "update --check-only",
+      "whoami"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execve",
+    "cmd": "/usr/bin/git git branch --show-current",
+    "hits": 22,
+    "runs": [
+      "--help",
+      "--list-models",
+      "--version",
+      "-m no-such-model-xyz -p hi",
+      "-p say ok --no-session",
+      "auth login",
+      "info",
+      "login",
+      "login anthropic",
+      "login copilot",
+      "login openai",
+      "mcp --help",
+      "mcp list",
+      "mods --help",
+      "mods list",
+      "skills --help",
+      "skills list",
+      "status",
+      "taste --help",
+      "taste list",
+      "update --check-only",
+      "whoami"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execve",
+    "cmd": "/usr/bin/mkdir mkdir /tmp/mitm-work/home-09/.commandcode/cache/providers/@byokkit/cmd-provider-copilot/.install-loc",
+    "hits": 1,
+    "runs": [
+      "login copilot"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execve",
+    "cmd": "/usr/bin/ps ps -p 865",
+    "hits": 1,
+    "runs": [
+      "info"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execve",
+    "cmd": "/usr/bin/rm rm -f /tmp/mitm-work/home-09/.commandcode/cache/providers/@byokkit/cmd-provider-copilot/.install-com",
+    "hits": 1,
+    "runs": [
+      "login copilot"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execve",
+    "cmd": "/usr/bin/rm rm -rf /tmp/mitm-work/home-09/.commandcode/cache/providers/@byokkit/cmd-provider-copilot/.install-lo",
+    "hits": 1,
+    "runs": [
+      "login copilot"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execve",
+    "cmd": "/usr/bin/tput tput cols",
+    "hits": 14,
+    "runs": [
+      "info",
+      "login"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execve",
+    "cmd": "/usr/bin/tput tput lines",
+    "hits": 14,
+    "runs": [
+      "info",
+      "login"
     ],
     "args_sample": []
   },

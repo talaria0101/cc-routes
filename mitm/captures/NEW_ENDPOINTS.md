@@ -1,7 +1,7 @@
 # Runtime-observed endpoints missing from static tables
 
 Bundle: `/tmp/mitm-work/cli-1.62.1/package/dist/cli.mjs`.
-Observed 30 unique endpoints (174 events); 1 not covered by static/spec tables.
+Observed 30 unique endpoints (175 events); 1 not covered by static/spec tables.
 
 ## `POST github.com/login/device/code`
 - hits: 1, statuses: [200]
@@ -11,10 +11,10 @@ Observed 30 unique endpoints (174 events); 1 not covered by static/spec tables.
 ## Tap host allowlist verdict
 
 - [ok] `127.0.0.1` hits=1 via dns (local-only/BYOK target (no listener here))
-- [UNKNOWN] `api.axiom.co` hits=14 via dns (NOT IN ALLOWLIST)
-- [ok] `api.commandcode.ai` hits=31 via connect_line,sni (provider API (bundle API_BASE_URLS + docs))
+- [ok] `api.axiom.co` hits=13 via dns (telemetry backend (bundle AXIOM_ENDPOINT; DNS-only without auth key, observed live))
+- [ok] `api.commandcode.ai` hits=33 via connect_line,sni (provider API (bundle API_BASE_URLS + docs))
 - [ok] `github.com` hits=2 via connect_line,sni (copilot provider GitHub device flow (POST /login/device/code, observed live))
-- [UNKNOWN] `ingestion.claicode.com` hits=14 via dns (NOT IN ALLOWLIST)
+- [ok] `ingestion.claicode.com` hits=13 via dns (telemetry backend (bundle ingestion URL; DNS-only without auth key, observed live))
 - [ok] `registry.npmjs.org` hits=114 via connect_line,sni (update check via npm child; @byokkit provider lazy-installs)
 
 Hook blind spots (tap saw host, hook saw no URL):

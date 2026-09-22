@@ -27,12 +27,9 @@ case "$MODE" in
     python3 cc_routes.py "${PASS[@]}" || exit $?
     python3 mitm/drive.py --work ./mitm/work --captures ./mitm/captures \
       "${PASS[@]}" || exit $?
+    # analyze exits 2 only on validation refusal (outputs kept stale);
+    # an unknown-host verdict is recorded in NEW_ENDPOINTS.md, not fatal.
     python3 mitm/analyze.py --captures ./mitm/captures \
-      --spec ./spec/api-spec.json "${PASS[@]}"
-    rc=$?
-    if [ $rc -eq 1 ]; then
-      echo "analyze verdict: unknown hosts (see NEW_ENDPOINTS.md)" >&2
-    fi
-    exit $rc
+      --spec ./spec/api-spec.json "${PASS[@]}" || exit $?
     ;;
 esac

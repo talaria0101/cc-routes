@@ -26,9 +26,14 @@ import re
 
 
 def atomic_write(path, data):
-    tmp = path + ".tmp"
+    tmp = f"{path}.tmp-{os.getpid()}"
     with open(tmp, "w") as f:
         f.write(data)
+        f.flush()
+        try:
+            os.fsync(f.fileno())
+        except OSError:
+            pass
     os.replace(tmp, path)
 import shutil
 import subprocess
