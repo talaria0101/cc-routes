@@ -1,0 +1,6 @@
+# raw captures stay local: may contain redacted-but-sensitive flows
+*.jsonl
+*.stdout.txt
+*.stderr.txt
+work/
+bin-empty/

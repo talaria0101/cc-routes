@@ -1,0 +1,269 @@
+{
+  "version": "1.62.1",
+  "runner": "bun",
+  "started": "2026-09-22T09:19:01Z",
+  "cli_bundle": "/tmp/mitm-work/cli-1.62.1/package/dist/cli.mjs",
+  "runs": [
+    {
+      "args": [
+        "--help"
+      ],
+      "rc": 0,
+      "seconds": 0.6,
+      "log": "run00---help.jsonl",
+      "stdout_tail": "Learn taste from the current repository\n  cmd taste learn owner/repo        Learn taste from a GitHub repository\n  cmd --add-dir ../shared           Start with additional directory scope\n  cmd info                          Show system information\n  cmd feedback \"title\"              Open feedback form with title\n\n\u276f Start with a prompt: cmd \"fix the login bug\"\n\nLinks\n  Documentation                     https://commandcode.ai/docs\n  Discord Community                 https://commandcode.ai/discord\n\n",
+      "name": "run00---help",
+      "events": 4
+    },
+    {
+      "args": [
+        "--version"
+      ],
+      "rc": 0,
+      "seconds": 0.5,
+      "log": "run01---version.jsonl",
+      "stdout_tail": "1.62.1\n",
+      "name": "run01---version",
+      "events": 4
+    },
+    {
+      "args": [
+        "--list-models"
+      ],
+      "rc": 0,
+      "seconds": 2.8,
+      "log": "run02---list-models.jsonl",
+      "stdout_tail": "ok-4.7                           coding and knowledge work, built for multi-hour tasks\n\nPass the full id, or just the short name after the last \"/\":\ncmd --model moonshotai/kimi-k2.5\ncmd --model kimi-k2.5\n\nDocs:  https://commandcode.ai/docs/reference/cli/models\n\nDecision models (headless only)\ntypesafe/jev  typed questions in, probabilities out, free for a limited time \u2014 Run it headlessly: cmd -p '{\"state\": \"...\", \"questions\": {\"<name>\": {\"type\": \"noul\", \"instructions\": \"...\"}}}' -m typesafe/jev\n",
+      "name": "run02---list-models",
+      "events": 10
+    },
+    {
+      "args": [
+        "info"
+      ],
+      "rc": 0,
+      "seconds": 2.8,
+      "log": "run03-info.jsonl",
+      "stdout_tail": "\u2500\u2500\u2500 System Information \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\u25cf Version     Unknown\n\u25cf Date        2026-09-22\n\u276f Platform    Linux (linux, x64)\n\u25b2 Hostname    sandbox\n\u25cf User        unknown\n\u25cf CPUs        16 cores\n\u25cf Memory      30 GB\n\u25b6 Uptime      6d 8h 12m\n\u2192 Home        /tmp/mitm-work/home-03\n\u276f Shell       python3\n\u25cf Node        v26.3.0\n\u276f Terminal    Unknown\n\u25cf IDE         N/A\n\n",
+      "name": "run03-info",
+      "events": 20
+    },
+    {
+      "args": [
+        "status"
+      ],
+      "rc": 1,
+      "seconds": 0.5,
+      "log": "run04-status.jsonl",
+      "stdout_tail": "\nRun cmd auth login to authenticate.\n\n",
+      "name": "run04-status",
+      "events": 4
+    },
+    {
+      "args": [
+        "whoami"
+      ],
+      "rc": 1,
+      "seconds": 0.5,
+      "log": "run05-whoami.jsonl",
+      "stdout_tail": "",
+      "name": "run05-whoami",
+      "events": 4
+    },
+    {
+      "args": [
+        "update",
+        "--check-only"
+      ],
+      "rc": 0,
+      "seconds": 2.8,
+      "log": "run06-update---check-only.jsonl",
+      "stdout_tail": "Please check your internet connection or try again later.\n",
+      "name": "run06-update---check-only",
+      "events": 10
+    },
+    {
+      "args": [
+        "login"
+      ],
+      "rc": 0,
+      "seconds": 3.0,
+      "log": "run07-login.jsonl",
+      "stdout_tail": "i-1.62.1/package/node_modules/rea\n  MountEffects             ct-reconciler/cjs/react-reconciler.development.js:12\n                           934:11)\n -commitPassiveMountO (/tmp/mitm-work/cli-1.62.1/package/node_modules/react-rec\n  Fiber              onciler/cjs/react-reconciler.development.js:12999:11)\n -recursivelyTraversePassiv (/tmp/mitm-work/cli-1.62.1/package/node_modules/rea\n  MountEffects             ct-reconciler/cjs/react-reconciler.development.js:12\n                           934:11)\n\n",
+      "name": "run07-login",
+      "events": 30
+    },
+    {
+      "args": [
+        "auth",
+        "login"
+      ],
+      "rc": 1,
+      "seconds": 0.5,
+      "log": "run08-auth-login.jsonl",
+      "stdout_tail": "",
+      "name": "run08-auth-login",
+      "events": 4
+    },
+    {
+      "args": [
+        "login",
+        "copilot"
+      ],
+      "rc": 0,
+      "seconds": 10.1,
+      "log": "run09-login-copilot.jsonl",
+      "stdout_tail": "  Logging into Copilot, use this code: ***\n\n\u001b[?25l\u2502\n\u25c6  Press Enter to open GitHub and paste the code there.\n\u2502  \u25cf Open / \u25cb Cancel\n\u2514\n",
+      "name": "run09-login-copilot",
+      "events": 67
+    },
+    {
+      "args": [
+        "login",
+        "anthropic"
+      ],
+      "rc": 0,
+      "seconds": 2.9,
+      "log": "run10-login-anthropic.jsonl",
+      "stdout_tail": "\u001b[?25l\u2502\n\u25c6  Open browser to sign in with Anthropic?\n\u2502  \u25cf Yes / \u25cb No\n\u2514\n",
+      "name": "run10-login-anthropic",
+      "events": 10
+    },
+    {
+      "args": [
+        "login",
+        "openai"
+      ],
+      "rc": 0,
+      "seconds": 2.9,
+      "log": "run11-login-openai.jsonl",
+      "stdout_tail": "\u001b[?25l\u2502\n\u25c6  Open browser to sign in with OpenAI ChatGPT/Codex?\n\u2502  \u25cf Yes / \u25cb No\n\u2514\n",
+      "name": "run11-login-openai",
+      "events": 10
+    },
+    {
+      "args": [
+        "-m",
+        "no-such-model-xyz",
+        "-p",
+        "hi"
+      ],
+      "rc": 1,
+      "seconds": 0.6,
+      "log": "run12--m-no-such-model-xyz--p-hi.jsonl",
+      "stdout_tail": "",
+      "name": "run12--m-no-such-model-xyz--p-hi",
+      "events": 4
+    },
+    {
+      "args": [
+        "-p",
+        "say ok",
+        "--no-session"
+      ],
+      "rc": 3,
+      "seconds": 0.5,
+      "log": "run13--p-say_ok---no-session.jsonl",
+      "stdout_tail": "",
+      "name": "run13--p-say_ok---no-session",
+      "events": 4
+    },
+    {
+      "args": [
+        "taste",
+        "--help"
+      ],
+      "rc": 0,
+      "seconds": 0.5,
+      "log": "run14-taste---help.jsonl",
+      "stdout_tail": "s] [package]  Pull taste packages from remote or global into the\n                            project (prompts on conflicts)\n  list|ls [options]         List available packages (project, global, or remote)\n  lint [options] [package]  Validate taste package format (structure, style,\n                            etc.)\n  open [options] [package]  Open a taste package in your editor (use\n                            owner/package to open in browser)\n  help [command]            display help for command\n",
+      "name": "run14-taste---help",
+      "events": 4
+    },
+    {
+      "args": [
+        "mcp",
+        "--help"
+      ],
+      "rc": 0,
+      "seconds": 0.5,
+      "log": "run15-mcp---help.jsonl",
+      "stdout_tail": "   display help for command\n\nCommands:\n  add [options] <name> [url]        Add an MCP server\n  list                              List configured MCP servers\n  get <name>                        Show details for an MCP server\n  remove [options] <name>           Remove an MCP server\n  add-json [options] <name> <json>  Add an MCP server from JSON configuration\n  auth [options] [server]           Manage OAuth authentication for MCP servers\n  help [command]                    display help for command\n",
+      "name": "run15-mcp---help",
+      "events": 4
+    },
+    {
+      "args": [
+        "skills",
+        "--help"
+      ],
+      "rc": 0,
+      "seconds": 0.5,
+      "log": "run16-skills---help.jsonl",
+      "stdout_tail": "age: cmd skills [options] [command]\n\nManage skills from GitHub repositories\n\nOptions:\n  -h, --help                     display help for command\n\nCommands:\n  add [options] <repo>           Install a skill from a GitHub repository\n  remove [options] <skill-name>  Remove an installed skill\n  list                           List all installed skills. Run with -d/--debug\n                                 to also see why any skills were skipped.\n  help [command]                 display help for command\n",
+      "name": "run16-skills---help",
+      "events": 4
+    },
+    {
+      "args": [
+        "mods",
+        "--help"
+      ],
+      "rc": 0,
+      "seconds": 0.5,
+      "log": "run17-mods---help.jsonl",
+      "stdout_tail": "name or by its\n                                  package source\n  list|ls [options]               List the mods a session loads, and where each\n                                  one comes from\n  update|up                       Reinstall and reconcile every configured mod\n                                  package\n  open [options]                  Open the mods directory (project by default,\n                                  --user for ~)\n  help [command]                  display help for command\n",
+      "name": "run17-mods---help",
+      "events": 4
+    },
+    {
+      "args": [
+        "mcp",
+        "list"
+      ],
+      "rc": 0,
+      "seconds": 2.7,
+      "log": "run18-mcp-list.jsonl",
+      "stdout_tail": "\nNo MCP servers configured\n\nAdd a server with:\n  cmd mcp add --transport http <name> <url>\n  cmd mcp add --transport stdio <name> -- <command>\n\nDocs: https://commandcode.ai/docs/mcp\n",
+      "name": "run18-mcp-list",
+      "events": 9
+    },
+    {
+      "args": [
+        "mods",
+        "list"
+      ],
+      "rc": 0,
+      "seconds": 4.1,
+      "log": "run19-mods-list.jsonl",
+      "stdout_tail": "\nMods (0)\n\n  No mods loaded. Looking in:\n    ~/.commandcode/mods (user)\n\n  Drop a .ts file in one (`cmd mods open --user`) or install a package: `cmd mods add <source>`.\n\n",
+      "name": "run19-mods-list",
+      "events": 10
+    },
+    {
+      "args": [
+        "skills",
+        "list"
+      ],
+      "rc": 0,
+      "seconds": 0.5,
+      "log": "run20-skills-list.jsonl",
+      "stdout_tail": "ls, or let the agent pace i...\n  agent-browser \u00b7 Browser automation CLI for AI agents. Use when the user n...\n  skill-builder \u00b7 Author a new Agent Skill for Command Code end to end \u2014 sc...\n  design \u00b7 Design partner for frontend interfaces. One command cover...\n  config \u00b7 Inspect or change validated Command Code settings. Use wh...\n  command-code-knowledge \u00b7 Authoritative Command Code product knowledge \u2014 slash comm...\n  mod-builder \u00b7 Build a Command Code mod (a loadable plugin) end to end \u2014...\n\n\n",
+      "name": "run20-skills-list",
+      "events": 4
+    },
+    {
+      "args": [
+        "taste",
+        "list"
+      ],
+      "rc": 0,
+      "seconds": 0.6,
+      "log": "run21-taste-list.jsonl",
+      "stdout_tail": "\nNo taste packages found in project\n",
+      "name": "run21-taste-list",
+      "events": 8
+    }
+  ],
+  "finished": "2026-09-22T09:19:42Z"
+}

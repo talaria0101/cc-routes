@@ -77,3 +77,8 @@ auth, no retries. Quota instruments stop at the wall.
 - `spec/api-spec.json` - latest generated spec (committed each run)
 - `corpus/` - small snapshots (`discovery.json`, `probes.json`,
   `provider-models.json`); large fetch cache is gitignored
+- `mitm/` - runtime harness: drives the real CLI through a capture
+  hook (`hook.mjs`), 22-command matrix (`drive.py`), endpoint diff
+  (`analyze.py`). Found what static analysis could not: `POST
+  github.com/login/device/code` (copilot device flow) and the lazy
+  `@byokkit/*` provider-install channel. See `mitm/README.md`.

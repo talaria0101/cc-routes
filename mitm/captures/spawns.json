@@ -1,0 +1,102 @@
+[
+  {
+    "call": "exec",
+    "cmd": "npm view command-code versions --json",
+    "hits": 22,
+    "runs": [
+      "--help",
+      "--list-models",
+      "--version",
+      "-m no-such-model-xyz -p hi",
+      "-p say ok --no-session",
+      "auth login",
+      "info",
+      "login",
+      "login anthropic",
+      "login copilot",
+      "login openai",
+      "mcp --help",
+      "mcp list",
+      "mods --help",
+      "mods list",
+      "skills --help",
+      "skills list",
+      "status",
+      "taste --help",
+      "taste list",
+      "update --check-only",
+      "whoami"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execFileSync",
+    "cmd": "tput",
+    "hits": 28,
+    "runs": [
+      "info",
+      "login"
+    ],
+    "args_sample": [
+      "cols",
+      "lines"
+    ]
+  },
+  {
+    "call": "execSync",
+    "cmd": "cmd --version",
+    "hits": 1,
+    "runs": [
+      "info"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execSync",
+    "cmd": "git branch --show-current",
+    "hits": 22,
+    "runs": [
+      "--help",
+      "--list-models",
+      "--version",
+      "-m no-such-model-xyz -p hi",
+      "-p say ok --no-session",
+      "auth login",
+      "info",
+      "login",
+      "login anthropic",
+      "login copilot",
+      "login openai",
+      "mcp --help",
+      "mcp list",
+      "mods --help",
+      "mods list",
+      "skills --help",
+      "skills list",
+      "status",
+      "taste --help",
+      "taste list",
+      "update --check-only",
+      "whoami"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "execSync",
+    "cmd": "ps -p 3702 -o comm=",
+    "hits": 1,
+    "runs": [
+      "info"
+    ],
+    "args_sample": []
+  },
+  {
+    "call": "spawn",
+    "cmd": "lock='/tmp/mitm-work/home-09/.commandcode/cache/providers/@byokkit/cmd-provider-copilot/.install-lock'; pidless_waits=0; while ! mkdir \"$lock\" 2>/dev/null; do if [ -f \"$lock/pid\" ]; then pidless_waits=0; if ! kill -0 \"$(cat \"$lock/pid\")\" 2>/dev/null; then rm -rf \"$lock\"; continue; fi; else pidless_w",
+    "hits": 1,
+    "runs": [
+      "login copilot"
+    ],
+    "args_sample": []
+  }
+]

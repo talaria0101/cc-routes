@@ -1,0 +1,502 @@
+[
+  {
+    "endpoint": "GET api.commandcode.ai/alpha/whoami",
+    "host": "api.commandcode.ai",
+    "path": "/alpha/whoami",
+    "hits": 10,
+    "statuses": [
+      401
+    ],
+    "runs": [
+      "--list-models",
+      "info",
+      "login",
+      "login anthropic",
+      "login copilot",
+      "login openai",
+      "mcp list",
+      "mods list",
+      "taste list",
+      "update --check-only"
+    ],
+    "in_static_bundle": true,
+    "in_prior_spec": true,
+    "auth_gate_observed": true
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/@ai-sdk%2fgateway",
+    "host": "registry.npmjs.org",
+    "path": "/@ai-sdk%2fgateway",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/@ai-sdk%2fopenai",
+    "host": "registry.npmjs.org",
+    "path": "/@ai-sdk%2fopenai",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/@ai-sdk%2fprovider",
+    "host": "registry.npmjs.org",
+    "path": "/@ai-sdk%2fprovider",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/@ai-sdk%2fprovider-utils",
+    "host": "registry.npmjs.org",
+    "path": "/@ai-sdk%2fprovider-utils",
+    "hits": 2,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/@ai-sdk/gateway/-/gateway-3.0.197.tgz",
+    "host": "registry.npmjs.org",
+    "path": "/@ai-sdk/gateway/-/gateway-3.0.197.tgz",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/@ai-sdk/openai/-/openai-3.0.115.tgz",
+    "host": "registry.npmjs.org",
+    "path": "/@ai-sdk/openai/-/openai-3.0.115.tgz",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/@ai-sdk/provider-utils/-/provider-utils-4.0.52.tgz",
+    "host": "registry.npmjs.org",
+    "path": "/@ai-sdk/provider-utils/-/provider-utils-4.0.52.tgz",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/@ai-sdk/provider/-/provider-3.0.16.tgz",
+    "host": "registry.npmjs.org",
+    "path": "/@ai-sdk/provider/-/provider-3.0.16.tgz",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/@byokkit%2fcmd-provider-copilot",
+    "host": "registry.npmjs.org",
+    "path": "/@byokkit%2fcmd-provider-copilot",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/@byokkit/cmd-provider-copilot/-/cmd-provider-copilot-0.1.1.tgz",
+    "host": "registry.npmjs.org",
+    "path": "/@byokkit/cmd-provider-copilot/-/cmd-provider-copilot-0.1.1.tgz",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/@opentelemetry%2fapi",
+    "host": "registry.npmjs.org",
+    "path": "/@opentelemetry%2fapi",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/@opentelemetry/api/-/api-1.9.1.tgz",
+    "host": "registry.npmjs.org",
+    "path": "/@opentelemetry/api/-/api-1.9.1.tgz",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/@standard-schema%2fspec",
+    "host": "registry.npmjs.org",
+    "path": "/@standard-schema%2fspec",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/@standard-schema/spec/-/spec-1.1.0.tgz",
+    "host": "registry.npmjs.org",
+    "path": "/@standard-schema/spec/-/spec-1.1.0.tgz",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/@vercel%2foidc",
+    "host": "registry.npmjs.org",
+    "path": "/@vercel%2foidc",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/@vercel/oidc/-/oidc-3.2.0.tgz",
+    "host": "registry.npmjs.org",
+    "path": "/@vercel/oidc/-/oidc-3.2.0.tgz",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/ai",
+    "host": "registry.npmjs.org",
+    "path": "/ai",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/ai/-/ai-6.0.287.tgz",
+    "host": "registry.npmjs.org",
+    "path": "/ai/-/ai-6.0.287.tgz",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/command-code",
+    "host": "registry.npmjs.org",
+    "path": "/command-code",
+    "hits": 22,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "--help",
+      "--list-models",
+      "--version",
+      "-m no-such-model-xyz -p hi",
+      "-p say ok --no-session",
+      "auth login",
+      "info",
+      "login",
+      "login anthropic",
+      "login copilot",
+      "login openai",
+      "mcp --help",
+      "mcp list",
+      "mods --help",
+      "mods list",
+      "skills --help",
+      "skills list",
+      "status",
+      "taste --help",
+      "taste list",
+      "update --check-only",
+      "whoami"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/eventsource-parser",
+    "host": "registry.npmjs.org",
+    "path": "/eventsource-parser",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/eventsource-parser/-/eventsource-parser-3.1.1.tgz",
+    "host": "registry.npmjs.org",
+    "path": "/eventsource-parser/-/eventsource-parser-3.1.1.tgz",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/json-schema",
+    "host": "registry.npmjs.org",
+    "path": "/json-schema",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/json-schema/-/json-schema-0.4.0.tgz",
+    "host": "registry.npmjs.org",
+    "path": "/json-schema/-/json-schema-0.4.0.tgz",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/npm",
+    "host": "registry.npmjs.org",
+    "path": "/npm",
+    "hits": 21,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "--help",
+      "--list-models",
+      "--version",
+      "-m no-such-model-xyz -p hi",
+      "-p say ok --no-session",
+      "auth login",
+      "info",
+      "login",
+      "login anthropic",
+      "login copilot",
+      "login openai",
+      "mcp --help",
+      "mods --help",
+      "mods list",
+      "skills --help",
+      "skills list",
+      "status",
+      "taste --help",
+      "taste list",
+      "update --check-only",
+      "whoami"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/undici",
+    "host": "registry.npmjs.org",
+    "path": "/undici",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/undici/-/undici-6.28.1.tgz",
+    "host": "registry.npmjs.org",
+    "path": "/undici/-/undici-6.28.1.tgz",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/zod",
+    "host": "registry.npmjs.org",
+    "path": "/zod",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "GET registry.npmjs.org/zod/-/zod-4.6.5.tgz",
+    "host": "registry.npmjs.org",
+    "path": "/zod/-/zod-4.6.5.tgz",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  },
+  {
+    "endpoint": "POST github.com/login/device/code",
+    "host": "github.com",
+    "path": "/login/device/code",
+    "hits": 1,
+    "statuses": [
+      200
+    ],
+    "runs": [
+      "login copilot"
+    ],
+    "in_static_bundle": null,
+    "in_prior_spec": null,
+    "auth_gate_observed": false
+  }
+]
