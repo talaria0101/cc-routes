@@ -505,13 +505,245 @@ def scrape_prices_from_corpus():
 CORPUS = "corpus"
 
 
+def deal_status(d, generated_utc):
+    """One-line human status for a deal (live / expired / unbounded)."""
+    exp = d.get("expires")
+    if d.get("ends_when"):
+        return f"live ({d['ends_when']})"
+    if not exp:
+        return "live (no expiry published)"
+    try:
+        exp_dt = exp.replace("Z", "+00:00")
+        alive = exp_dt >= (generated_utc or "")
+    except Exception:
+        return f"expires {exp}"
+    return (f"live (through {exp})" if alive
+            else f"EXPIRED {exp} but still shipped")
+
+
+def render_markdown(spec):
+    L = []
+    A = L.append
+    gen = spec.get("generated_utc", "?")
+    src = spec.get("sources", {})
+    A("# Command Code API spec (human report)")
+    A("")
+    A(f"Generated (UTC): {gen}. Machine-readable twin: "
+      f"`spec/api-spec.json`.")
+    A(f"Sources re-resolved this run: {src.get('sitemap_urls', '?')} "
+      f"sitemap URLs, {src.get('docs_paths', '?')} docs paths, "
+      f"{src.get('asset_js', '?')} website JS assets, "
+      f"CLI {src.get('cli_version', '?')}.")
+    A("")
+    A("## TL;DR")
+    A("")
+    A(f"- Models available: **{spec.get('model_count', 0)}** "
+      f"(live `GET /provider/v1/models`, no auth needed).")
+    free = spec.get("free_models", [])
+    A(f"- Free models: "
+      f"{', '.join(f'`{m}`' for m in free) if free else 'none'}."
+      f" Free requests still need $1 of credits to start a session.")
+    deals = spec.get("deals_now", [])
+    live = [d for d in deals
+            if not deal_status(d, gen).startswith("EXPIRED")]
+    A(f"- Deals in the website bundle: {len(deals)} total, "
+      f"{len(live)} live.")
+    A("- Inference endpoints (chat, responses, messages, systemone) "
+      "all require a Bearer key (401 without one). No free inference "
+      "without an account.")
+    A("")
+    A("## Models available")
+    A("")
+    A("| Model id | Name | Context | Endpoints | Free |")
+    A("|---|---|---|---|---|")
+    for m in spec.get("models_available", []):
+        eps = ", ".join(f"`{e}`"
+                         for e in m.get("supported_endpoints", []))
+        ctx = m.get("context_length") or "?"
+        if isinstance(ctx, int):
+            if ctx >= 1000000:
+                ctx = (f"{ctx // 1000000}M" if ctx % 1000000 == 0
+                       else f"{ctx / 1000000:.1f}M")
+            elif ctx >= 1000:
+                ctx = f"{ctx // 1000}K"
+        A(f"| `{m.get('id')}` | {m.get('name')} | {ctx} | {eps} | "
+          f"{'yes' if m.get('free') else ''} |")
+    A("")
+    A("## Prices per 1M tokens (USD, at cost)")
+    A("")
+    A("Scraped from the pricing-limits table. Deal rows show current "
+      "(`now`) rates; `was` is the pre-deal list price.")
+    A("")
+    A("| Model | Ctx | In | Out | Cache read | Cache write | Deal |")
+    A("|---|---|---|---|---|---|---|")
+    for name, p in spec.get("prices_per_1m_usd", {}).items():
+        was = (" (was " + "/".join(p["was_per_1m"]) + ")"
+               if p.get("was_per_1m") else "")
+        A(f"| {name} | {p.get('context')} | {p.get('input_per_1m')} | "
+          f"{p.get('output_per_1m')} | {p.get('cache_read_per_1m')} | "
+          f"{p.get('cache_write_per_1m')} | "
+          f"{p.get('deal_badge', '')}{was} |")
+    A("")
+    A("## Deals")
+    A("")
+    for d in deals:
+        mult = d.get("multiplier")
+        eff = (f"~{1 / mult:.1f}x further" if mult else "?")
+        A(f"### {d.get('title')}")
+        A(f"- Discount: {d.get('discount_percent')}% off "
+          f"(multiplier {mult}, every credit goes {eff}).")
+        A(f"- Models: "
+          f"{', '.join(f'`{m}`' for m in d.get('model_ids', []))}.")
+        A(f"- Status: {deal_status(d, gen)}.")
+        A(f"- Docs anchor: `#{d.get('docs_anchor')}`.")
+        A("")
+    A("## Auth gates (probed live, no credentials)")
+    A("")
+    A("| Endpoint | Verdict |")
+    A("|---|---|")
+    for url, verdict in spec.get("auth", {}).items():
+        A(f"| `{url}` | {verdict} |")
+    A("")
+    A("## Endpoints carrying model / price / deal data")
+    A("")
+    for e in spec.get("interesting_endpoints", []):
+        fl = ", ".join(k for k, v in e["flags"].items() if v)
+        A(f"- `{e['url']}` [{fl}] {json.dumps(e['detail'])[:160]}")
+    A("- Prices: `/docs/resources/pricing-limits` model-pricing table "
+      f"({spec.get('prices_n', 0)} rows).")
+    A("- Deals: website `deals.js` bundle "
+      f"({len(deals)} deals).")
+    A("- Per-plan allowances: website `goat-plan-public` / `plan-tiers` "
+      "bundles (see corpus/).")
+    A("")
+    A("## Drift notes")
+    A("")
+    expired = [d for d in deals
+               if deal_status(d, gen).startswith("EXPIRED")]
+    for d in expired:
+        A(f"- `{d['id']}` expired {d.get('expires')} but is still "
+          "shipped in the bundle; trust the live probe, not the bundle.")
+    live_ids = {m for d in deals for m in d.get("model_ids", [])}
+    reg_ids = {m.get("id", "").split("/")[-1].lower().replace(
+        ":free", "").replace("-", "")
+        for m in spec.get("models_available", [])}
+    for d in deals:
+        for m in d.get("model_ids", []):
+            norm = m.lower().replace(":free", "").replace("-", "")
+            if norm not in reg_ids and not deal_status(
+                    d, gen).startswith("EXPIRED"):
+                A(f"- Deal model `{m}` ({d['id']}) is not in the live "
+                  "model list; may be renamed or offline.")
+    if not expired:
+        A("- No expired deals in the bundle this run.")
+    A("")
+    A("## Reproduce")
+    A("")
+    A("```sh")
+    A("python3 cc_routes.py            # full run: discover + probe + spec")
+    A("python3 cc_routes.py --report-only  # re-render this report from "
+      "spec/api-spec.json")
+    A("```")
+    return "\n".join(L) + "\n"
+
+
+def _txt_table(headers, rows):
+    widths = [len(h) for h in headers]
+    for r in rows:
+        for i, c in enumerate(r):
+            widths[i] = max(widths[i], min(52, len(c)))
+    def fmt(r):
+        return " | ".join(c[:widths[i]].ljust(widths[i])
+                            for i, c in enumerate(r))
+    lines = [fmt(headers), "-+- ".join("-" * w for w in widths)]
+    lines += [fmt(r) for r in rows]
+    return lines
+
+
+def render_text(spec):
+    L = []
+    A = L.append
+    gen = spec.get("generated_utc", "?")
+    A("COMMAND CODE API SPEC (human report)")
+    A(f"Generated (UTC): {gen}. Twin: spec/api-spec.json.")
+    A("")
+    A("TL;DR")
+    A(f"  models: {spec.get('model_count', 0)} (live, no auth)")
+    A(f"  free: {', '.join(spec.get('free_models', [])) or 'none'}")
+    A(f"  deals: {len(spec.get('deals_now', []))} in bundle")
+    A("  inference endpoints: Bearer key required (401 without one)")
+    A("")
+    A("MODELS")
+    L += _txt_table(
+        ["model id", "context", "endpoints", "free"],
+        [[m.get("id", ""), str(m.get("context_length") or "?"),
+          ",".join(m.get("supported_endpoints", [])),
+          "yes" if m.get("free") else ""]
+         for m in spec.get("models_available", [])])
+    A("")
+    A("PRICES PER 1M TOKENS (USD)")
+    L += _txt_table(
+        ["model", "ctx", "in", "out", "read", "write", "deal"],
+        [[n, p.get("context", ""), p.get("input_per_1m", ""),
+          p.get("output_per_1m", ""), p.get("cache_read_per_1m", ""),
+          p.get("cache_write_per_1m", ""), p.get("deal_badge", "")]
+         for n, p in spec.get("prices_per_1m_usd", {}).items()])
+    A("")
+    A("DEALS")
+    for d in spec.get("deals_now", []):
+        A(f"  {d.get('title')} -- {d.get('discount_percent')}% off, "
+          f"models: {', '.join(d.get('model_ids', []))}, "
+          f"status: {deal_status(d, gen)}")
+    A("")
+    A("AUTH GATES")
+    for url, verdict in spec.get("auth", {}).items():
+        A(f"  {url} -> {verdict}")
+    return "\n".join(L) + "\n"
+
+
+def write_reports(spec, md_path, txt_path):
+    if md_path:
+        d = os.path.dirname(md_path)
+        if d:
+            os.makedirs(d, exist_ok=True)
+        with open(md_path, "w") as f:
+            f.write(render_markdown(spec))
+    if txt_path:
+        d = os.path.dirname(txt_path)
+        if d:
+            os.makedirs(d, exist_ok=True)
+        with open(txt_path, "w") as f:
+            f.write(render_text(spec))
+    return [p for p in (md_path, txt_path) if p]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="spec/api-spec.json")
     ap.add_argument("--corpus", default="corpus")
     ap.add_argument("--no-fetch-sources", action="store_true")
     ap.add_argument("--spec-only", action="store_true")
+    ap.add_argument("--report", default=None,
+                    help="markdown report path "
+                    "(default: <spec-dir>/REPORT.md)")
+    ap.add_argument("--report-txt", default=None,
+                    help="plain-text report path "
+                    "(default: <spec-dir>/REPORT.txt)")
+    ap.add_argument("--no-report", action="store_true")
+    ap.add_argument("--report-only", action="store_true",
+                    help="render reports from an existing spec only; "
+                    "pairs with --spec")
+    ap.add_argument("--spec", default=None,
+                    help="existing spec to render (with --report-only)")
     args = ap.parse_args()
+    if args.report_only:
+        spec_path = args.spec or args.out
+        spec = json.load(open(spec_path))
+        spec_dir = os.path.dirname(os.path.abspath(spec_path))
+        md = args.report or os.path.join(spec_dir, "REPORT.md")
+        tx = args.report_txt or os.path.join(spec_dir, "REPORT.txt")
+        print(f"report: {write_reports(spec, md, tx)}")
+        return
     global CORPUS
     CORPUS = args.corpus
     os.makedirs(CORPUS, exist_ok=True)
@@ -618,6 +850,11 @@ def main():
     print(f"deals: {len(spec['deals_now'])}, "
           f"prices scraped: {len(spec['prices_per_1m_usd'])}")
     print(f"spec: {args.out}")
+    if not args.no_report:
+        spec_dir = os.path.dirname(os.path.abspath(args.out))
+        md = args.report or os.path.join(spec_dir, "REPORT.md")
+        tx = args.report_txt or os.path.join(spec_dir, "REPORT.txt")
+        print(f"report: {write_reports(spec, md, tx)}")
 
 
 if __name__ == "__main__":

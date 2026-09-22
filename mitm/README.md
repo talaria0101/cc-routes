@@ -75,4 +75,5 @@ python3 analyze.py --captures ./captures --spec ../spec/api-spec.json
 
 Raw `*.jsonl` + stdout/stderr logs stay local (gitignored); curated
 `manifest.json`, `endpoints.json`, `spawns.json`, `NEW_ENDPOINTS.md`
-are committed.
+plus human-readable `REPORT.md` / `REPORT.txt` (auto-written by
+`analyze.py` on every run) are committed.

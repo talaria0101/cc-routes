@@ -64,11 +64,107 @@ def static_routes(cli_bundle):
     return routes
 
 
+def run_table_md(manifest):
+    lines = ["| Run | Exit | Time | Events |",
+             "|---|---|---|---|"
+             ]
+    for r in manifest.get("runs", []):
+        cmd = "cmd " + " ".join(r["args"])
+        lines.append(f"| `{cmd}` | {r['rc']} | {r['seconds']}s | "
+                     f"{r['events']} |")
+    return lines
+
+
+def write_reports(capdir, manifest, out_eps, spawns, new, total_events,
+                  bundle):
+    ver = manifest.get("version", "?")
+    n_runs = len(manifest.get("runs", []))
+    win = f"{manifest.get('started', '?')} .. " \
+        f"{manifest.get('finished', '?')}"
+    md = [f"# CLI drive report (v{ver}, "
+          f"{manifest.get('runner', '?')} runner)",
+          "",
+          f"{n_runs} runs, {total_events} captured events, "
+          f"{len(out_eps)} unique endpoints, {len(new)} new surface. "
+          f"Window (UTC): {win}.",
+          f"Bundle driven: `{bundle or 'n/a'}`.",
+          "",
+          "## Runs",
+          ""]
+    md += run_table_md(manifest)
+    md += ["", "## Endpoints observed", "",
+           "| Endpoint | Hits | Statuses | Seen in |",
+           "|---|---|---|---|"
+           ]
+    for e in out_eps:
+        runs = ", ".join(f"`cmd {' '.join(r.split())}`"[:60]
+                           for r in e["runs"][:4])
+        sts = ", ".join(str(s) for s in e["statuses"])
+        md.append(f"| `{e['endpoint']}` | {e['hits']} | {sts} | "
+                  f"{runs} |")
+    md += ["", "## Subprocesses spawned", "",
+           "| Call | Command | Hits | Runs |",
+           "|---|---|---|---|"
+           ]
+    for (call, cmd), v in sorted(spawns.items()):
+        runs = ", ".join(sorted(v["runs"])[:3])
+        md.append(f"| {call} | `{cmd[:80]}` | {v['hits']} | {runs} |")
+    md += ["", "## New surface (not in static tables)", ""]
+    if new:
+        for e in new:
+            md.append(f"- `{e['endpoint']}` "
+                      f"(hits {e['hits']}, statuses {e['statuses']}, "
+                      f"runs: {', '.join(e['runs'])})")
+    else:
+        md.append("None: every runtime endpoint is already covered.")
+    md += ["",
+           "## Limits",
+           "",
+           "- No TCP bind in the sandbox: capture is in-process "
+           "(`hook.mjs`), same plaintext visibility as a TLS proxy.",
+           "- No ptys: ink raw-mode flows (`login`, `-p` sessions) die "
+           "before interaction; auth-gated calls recorded as 401s.",
+           "- Raw logs (`*.jsonl`, stdout/stderr) stay local; only "
+           "curated summaries are committed.",
+           "",
+           "## Reproduce",
+           "",
+           "```sh",
+           "python3 drive.py --work ./work --captures ./captures",
+           "python3 analyze.py --captures ./captures "
+           "--spec ../spec/api-spec.json",
+           "```",
+           ""]
+    with open(os.path.join(capdir, "REPORT.md"), "w") as f:
+        f.write("\n".join(md))
+    tx = [f"CLI DRIVE REPORT v{ver} ({manifest.get('runner', '?')})",
+          f"{n_runs} runs, {total_events} events, "
+          f"{len(out_eps)} endpoints, {len(new)} new. {win}",
+          "", "RUNS"]
+    for r in manifest.get("runs", []):
+        tx.append(f"  cmd {' '.join(r['args']):44} rc={r['rc']!s:8} "
+                  f"{r['seconds']}s events={r['events']}")
+    tx += ["", "ENDPOINTS"]
+    for e in out_eps:
+        tx.append(f"  {e['hits']:3}  {e['endpoint'][:76]:76} "
+                  f"{e['statuses']}")
+    tx += ["", "SPAWNS"]
+    for (call, cmd), v in sorted(spawns.items()):
+        tx.append(f"  {v['hits']:3}  {call:10} {cmd[:70]}")
+    tx += ["", "NEW SURFACE"]
+    tx += [f"  {e['endpoint']} {e['statuses']}" for e in new] or \
+        ["  none"]
+    with open(os.path.join(capdir, "REPORT.txt"), "w") as f:
+        f.write("\n".join(tx) + "\n")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--captures", default=os.path.join(HERE, "captures"))
     ap.add_argument("--spec",
                     default=os.path.join(HERE, "..", "spec", "api-spec.json"))
+    ap.add_argument("--no-report", action="store_true",
+                    help="skip REPORT.md / REPORT.txt")
     args = ap.parse_args()
 
     try:
@@ -195,6 +291,9 @@ def main():
                     "runs": sorted(v["runs"]),
                     "args_sample": sorted(v["args"])[:6]}
                    for k, v in sorted(spawns.items())], f, indent=2)
+    if not args.no_report:
+        write_reports(args.captures, manifest, out_eps, spawns, new,
+                      total_events, bundle)
     print(f"events: {total_events}, unique endpoints: {len(out_eps)}, "
           f"new: {len(new)}, unique spawns: {len(spawns)}")
     for e in out_eps:

@@ -1,0 +1,202 @@
+COMMAND CODE API SPEC (human report)
+Generated (UTC): 2026-09-22T08:58:49Z. Twin: spec/api-spec.json.
+
+TL;DR
+  models: 76 (live, no auth)
+  free: poolside/laguna-s-2.1-free, inclusionai/ling-3.0-flash-sante:free
+  deals: 8 in bundle
+  inference endpoints: Bearer key required (401 without one)
+
+MODELS
+model id                              | context | endpoints                    | free
+--------------------------------------+- --------+- -----------------------------+- ----
+claude-sonnet-5                       | 1000000 | /messages                    |     
+claude-sonnet-4-6                     | 1000000 | /messages                    |     
+claude-fable-5-1                      | 1000000 | /messages                    |     
+claude-fable-5                        | 1000000 | /messages                    |     
+claude-opus-5                         | 1000000 | /messages                    |     
+claude-opus-4-8                       | 1000000 | /messages                    |     
+claude-opus-4-7                       | 1000000 | /messages                    |     
+claude-haiku-4-5-20251001             | 200000  | /messages                    |     
+gpt-5.6-sol                           | 1050000 | /chat/completions,/responses |     
+gpt-5.6-terra                         | 1050000 | /chat/completions,/responses |     
+gpt-5.6-luna                          | 1050000 | /chat/completions,/responses |     
+gpt-5.5                               | 400000  | /chat/completions,/responses |     
+gpt-5.4                               | 400000  | /chat/completions,/responses |     
+gpt-5.3-codex                         | 400000  | /chat/completions,/responses |     
+gpt-5.4-mini                          | 400000  | /chat/completions,/responses |     
+deepseek/deepseek-v4-pro              | 1000000 | /chat/completions,/responses |     
+deepseek/deepseek-v4-flash            | 1000000 | /chat/completions,/responses |     
+deepseek/deepseek-v4-flash-vision-exp | 1000000 | /chat/completions,/responses |     
+deepseek/deepseek-v4-flash-fast       | 1000000 | /chat/completions            |     
+deepseek/deepseek-v4.1-flash          | 1000000 | /chat/completions,/responses |     
+moonshotai/Kimi-K3                    | 1000000 | /chat/completions,/responses |     
+moonshotai/Kimi-K2.7-Code             | 256000  | /chat/completions,/responses |     
+moonshotai/Kimi-K2.7-Code-Highspeed   | 262000  | /chat/completions,/responses |     
+moonshotai/Kimi-K2.6                  | 256000  | /chat/completions,/responses |     
+moonshotai/Kimi-K2.5                  | 256000  | /chat/completions,/responses |     
+z-ai/glm-5.3-flash                    | 1048576 | /chat/completions,/responses |     
+z-ai/glm-5.3-flashx                   | 1000000 | /chat/completions,/responses |     
+zai-org/GLM-5.3                       | 1000000 | /chat/completions,/responses |     
+zai-org/GLM-5.2                       | 1000000 | /chat/completions,/responses |     
+zai-org/GLM-5.2-Fast                  | 1000000 | /chat/completions,/responses |     
+zai-org/GLM-5.1                       | 200000  | /chat/completions,/responses |     
+zai-org/GLM-5                         | 200000  | /chat/completions,/responses |     
+MiniMaxAI/MiniMax-M3                  | 1000000 | /chat/completions,/responses |     
+MiniMaxAI/MiniMax-M2.7                | 200000  | /chat/completions,/responses |     
+MiniMaxAI/MiniMax-M2.5                | 200000  | /chat/completions,/responses |     
+xiaomi/mimo-v2.6-pro                  | 1048576 | /chat/completions,/responses |     
+xiaomi/mimo-v2.6-pro-ultraspeed       | 1048576 | /chat/completions,/responses |     
+xiaomi/mimo-v2.6-flash                | 1048576 | /chat/completions,/responses |     
+xiaomi/mimo-v2.5-pro                  | 1000000 | /chat/completions,/responses |     
+xiaomi/mimo-v2.5                      | 1000000 | /chat/completions,/responses |     
+Qwen/Qwen3.8-Omni-Flash               | 1000000 | /chat/completions,/responses |     
+Qwen/Qwen3.8-Max-0902                 | 1000000 | /chat/completions            |     
+Qwen/Qwen3.8-Max                      | 1000000 | /chat/completions,/responses |     
+Qwen/Qwen3.8-27B                      | 262144  | /chat/completions,/responses |     
+Qwen/Qwen3.8-Flash                    | 1000000 | /chat/completions            |     
+Qwen/Qwen3.7-Max                      | 1000000 | /chat/completions,/responses |     
+Qwen/Qwen3.7-Plus                     | 1000000 | /chat/completions,/responses |     
+Qwen/Qwen3.7-Flash                    | 1000000 | /chat/completions,/responses |     
+Qwen/Qwen3.6-Max-Preview              | 200000  | /chat/completions,/responses |     
+Qwen/Qwen3.6-Plus                     | 200000  | /chat/completions,/responses |     
+meituan/LongCat-2.0                   | 1048576 | /chat/completions            |     
+stepfun/Step-5-Preview                | 1000000 | /chat/completions,/responses |     
+stepfun/Step-3.7-Flash                | 256000  | /chat/completions,/responses |     
+stepfun/Step-3.5-Flash                | 1000000 | /chat/completions            |     
+tencent/hy3-paid                      | 262144  | /chat/completions,/responses |     
+tencent/hy4-preview                   | 1048576 | /chat/completions            |     
+google/gemini-3.8-flash               | 1000000 | /chat/completions,/responses |     
+google/gemini-3.7-flash               | 1048576 | /chat/completions            |     
+google/gemini-3.6-flash               | 1000000 | /chat/completions,/responses |     
+google/gemini-3.5-flash               | 1000000 | /chat/completions,/responses |     
+google/gemini-3.5-flash-lite          | 1000000 | /chat/completions,/responses |     
+google/gemini-3.1-flash-lite          | 1000000 | /chat/completions,/responses |     
+sakana/fugu-ultra                     | 1000000 | /chat/completions,/responses |     
+nvidia/nemotron-3-ultra-550b-a55b     | 1000000 | /chat/completions,/responses |     
+thinkingmachines/inkling              | 256000  | /chat/completions,/responses |     
+thinkingmachines/inkling-small        | 1000000 | /chat/completions,/responses |     
+poolside/laguna-s-2.1-free            | 256000  | /chat/completions,/responses | yes 
+inclusionai/ling-3.0-flash-sante:free | 262144  | /chat/completions            | yes 
+meta/muse-spark-1.1                   | 1048576 | /chat/completions,/responses |     
+meta/muse-spark-1.2                   | 1048576 | /chat/completions,/responses |     
+meta/muse-spark-1.2-contributor       | 1048576 | /chat/completions,/responses |     
+meta/muse-spark-1.3                   | 1048576 | /chat/completions,/responses |     
+meta/muse-spark-1.3-contributor       | 1048576 | /chat/completions,/responses |     
+xai/grok-4.5                          | 500000  | /chat/completions,/responses |     
+xai/grok-4.6                          | 500000  | /chat/completions,/responses |     
+xai/grok-4.7                          | 500000  | /chat/completions,/responses |     
+
+PRICES PER 1M TOKENS (USD)
+model                          | ctx  | in     | out    | read    | write    | deal
+-------------------------------+- -----+- -------+- -------+- --------+- ---------+- ----
+Laguna S 2.1                   | 256K | Free   | Free   | Free    | —        | FREE
+Ling 3.0 Flash                 | 256K | Free   | Free   | Free    | —        |     
+Ling 3.0 Flash Sante           | 262K | Free   | Free   | Free    | —        | FREE
+Tencent Hy4 Preview            | 1M   | $0.834 | $2.501 | $0.042  | —        |     
+Tencent Hy3                    | 262K | $0.14  | $0.58  | $0.035  | —        |     
+Kimi K3                        | 1M   | $3.00  | $15.00 | $0.30   | —        |     
+Kimi K2.7 Code                 | 256K | $0.95  | $4.00  | $0.19   | —        |     
+Kimi K2.7 Code HighSpeed       | 262K | $1.90  | $8.00  | $0.38   | —        |     
+Kimi K2.6                      | 256K | $0.95  | $4.00  | $0.16   | —        |     
+Kimi K2.5                      | 256K | $0.60  | $3.00  | $0.10   | —        |     
+GLM-5.3 Flash                  | 1M   | $0.15  | $0.50  | $0.03   | —        |     
+GLM-5.3 FlashX                 | 1M   | $0.37  | $1.25  | $0.075  | —        |     
+GLM-5.3                        | 1M   | $1.40  | $4.40  | $0.26   | —        |     
+GLM-5.2                        | 1M   | $1.40  | $4.40  | $0.26   | —        |     
+GLM-5.2 Fast                   | 1M   | $3.00  | $10.25 | $0.50   | —        |     
+GLM-5.1                        | —    | $1.40  | $4.40  | $0.26   | —        |     
+GLM-5                          | 200K | $1.00  | $3.20  | $0.20   | —        |     
+MiniMax M3                     | 1M   | $0.30  | $1.20  | $0.06   | —        | -50%
+MiniMax M2.7                   | —    | $0.30  | $1.20  | $0.06   | —        |     
+MiniMax M2.5                   | 200K | $0.30  | $1.20  | $0.03   | —        |     
+DeepSeek V4 Pro (latest)       | 1M   | $0.66  | $1.98  | $0.022  | —        |     
+DeepSeek V4 Flash (latest)     | 1M   | $0.15  | $0.60  | $0.003  | —        |     
+DeepSeek V4 Flash Vision (exp) | 1M   | $0.15  | $0.60  | $0.003  | —        |     
+DeepSeek V4 Flash Fast         | 1M   | $0.28  | $0.56  | $0.07   | —        |     
+DeepSeek V4.1 Flash            | 1M   | $0.15  | $0.60  | $0.003  | —        |     
+Qwen 3.8 Omni Flash            | 1M   | $0.15  | $0.47  | $0.016  | —        |     
+Qwen 3.8 Max 0902              | 1M   | $2.00  | $6.00  | $0.25   | —        |     
+Qwen 3.8 Max                   | 1M   | $2.00  | $6.00  | $0.25   | $2.50    |     
+Qwen 3.8 27B                   | 262K | $0.40  | $3.00  | $0.04   | —        |     
+Qwen 3.6 Max Preview           | —    | $1.30  | $7.80  | $0.26   | $1.63    |     
+Qwen 3.6 Plus                  | —    | $0.50  | $3.00  | $0.10   | —        |     
+Qwen 3.7 Max                   | 1M   | $2.50  | $7.50  | $0.50   | $3.13    |     
+Qwen 3.7 Plus                  | 1M   | $0.40  | $1.60  | $0.08   | $0.50    |     
+Qwen 3.8 Flash                 | 1M   | $0.16  | $0.47  | $0.016  | —        |     
+Qwen 3.7 Flash                 | 1M   | $0.03  | $0.13  | $0.006  | $0.038   |     
+LongCat 2.0                    | 1M   | $0.30  | $1.20  | $0.006  | —        |     
+Step 5 Preview                 | 1M   | $1.00  | $2.70  | $0.05   | —        |     
+Step 3.7 Flash                 | 256K | $0.20  | $1.15  | $0.04   | —        |     
+Step 3.5 Flash                 | 1M   | $0.10  | $0.30  | $0.02   | —        |     
+MiMo V2.6 Pro                  | 1M   | $0.435 | $0.87  | $0.0036 | —        |     
+MiMo V2.6 Pro UltraSpeed       | 1M   | $4.35  | $8.70  | $0.036  | —        |     
+MiMo V2.6 Flash                | 1M   | $0.14  | $0.28  | $0.0028 | —        |     
+MiMo V2.5 Pro                  | 1M   | $0.435 | $0.87  | $0.0036 | —        | -99%
+MiMo V2.5                      | 1M   | $0.14  | $0.28  | $0.0028 | —        | -98%
+Nemotron 3 Ultra               | 1M   | $0.60  | $2.40  | $0.12   | —        |     
+Claude Fable 5.1               | 1M   | $10.00 | $50.00 | $0.25   | $12.50   |     
+Claude Fable 5                 | 1M   | $10.00 | $50.00 | $1.00   | $12.50   |     
+Claude Opus 5                  | 1M   | $5.00  | $25.00 | $0.50   | $6.25    |     
+Claude Opus 4.8                | 1M   | $5.00  | $25.00 | $0.50   | $6.25    |     
+Claude Opus 4.7                | 1M   | $5.00  | $25.00 | $0.50   | $6.25    |     
+Claude Opus 4.6                | 1M   | $5.00  | $25.00 | $0.50   | $6.25    |     
+Claude Sonnet 5                | 1M   | $2.00  | $10.00 | $0.20   | $2.50    |     
+Claude Sonnet 4.6              | 1M   | $3.00  | $15.00 | $0.30   | $3.75    |     
+Claude Haiku 4.5               | 200K | $1.00  | $5.00  | $0.10   | $1.25    |     
+GPT-6 Astra                    | 1.1M | $10.00 | $50.00 | $1.00   | $12.50   |     
+GPT-5.6 Sol                    | 1.1M | $5.00  | $30.00 | $0.50   | $6.25    |     
+GPT-5.6 Terra                  | 1.1M | $2.00  | $12.00 | $0.20   | $2.50    |     
+GPT-5.6 Luna                   | 1.1M | $0.20  | $1.20  | $0.02   | $0.25    |     
+GPT-5.5                        | 400K | $5.00  | $30.00 | $0.50   | —        |     
+GPT-5.4                        | 400K | $2.50  | $15.00 | $0.25   | —        |     
+GPT-5.4 Mini                   | 400K | $0.75  | $4.50  | $0.075  | —        |     
+GPT-5.3 Codex                  | 400K | $2.00  | $8.00  | $0.50   | —        |     
+Gemini 3.8 Flash               | 1M   | $1.50  | $7.50  | $0.15   | —        |     
+Gemini 3.7 Flash               | 1M   | $1.50  | $7.50  | $0.15   | $0.08334 |     
+Gemini 3.6 Flash               | 1M   | $1.50  | $7.50  | $0.15   | —        |     
+Gemini 3.5 Flash               | 1M   | $1.50  | $9.00  | $0.15   | —        |     
+Gemini 3.5 Flash Lite          | 1M   | $0.30  | $2.50  | $0.03   | —        |     
+Gemini 3.1 Flash Lite          | 1M   | $0.25  | $1.50  | $0.03   | —        |     
+Fugu Ultra                     | 1M   | $5.00  | $30.00 | $0.50   | —        |     
+Muse Spark 1.3                 | 1M   | $1.25  | $4.25  | $0.15   | —        |     
+Muse Spark 1.3 Contributor     | 1M   | $0.10  | $0.20  | $0.002  | —        |     
+Muse Spark 1.2                 | 1M   | $1.25  | $4.25  | $0.15   | —        |     
+Muse Spark 1.2 Contributor     | 1M   | $0.10  | $0.20  | $0.002  | —        |     
+Muse Spark 1.1                 | 1M   | $1.25  | $4.25  | $0.15   | —        |     
+Grok 4.7                       | 500K | $1.20  | $3.60  | $0.30   | —        | -40%
+Grok 4.6                       | 500K | $2.00  | $6.00  | $0.50   | —        |     
+Grok 4.5                       | 500K | $2.00  | $6.00  | $0.50   | —        |     
+Inkling                        | 256K | $1.00  | $4.05  | $0.17   | —        |     
+Inkling Small                  | 1M   | $0.50  | $1.20  | $0.10   | —        |     
+Claude Sonnet 4.5              | 1M   | $3.00  | $15.00 | $0.30   | $3.75    |     
+
+DEALS
+  Qwen 3.7 Max: 2x usage -- 50% off, models: qwen-3.7-max, status: EXPIRED 2026-06-22 but still shipped
+  MiniMax M3: 2x usage -- 50% off, models: minimax-m3, status: live (no expiry published)
+  Grok 4.7: 40% off at launch -- 40% off, models: grok-4.7, status: live (through 2026-09-27T23:59:59.999Z)
+  MiMo V2.5 Pro: up to 99% off -- 99% off, models: mimo-v2.5-pro, status: live (no expiry published)
+  MiMo V2.5: up to 98% off -- 98% off, models: mimo-v2.5, status: live (no expiry published)
+  Laguna S 2.1: free -- 100% off, models: laguna-s-2.1-free, status: live (while capacity lasts)
+  Ling 3.0 Flash: free -- 100% off, models: ling-3.0-flash-free, status: EXPIRED 2026-08-02 but still shipped
+  Ling 3.0 Flash Sante: free -- 100% off, models: ling-3.0-flash-sante:free, status: live (while it lasts)
+
+AUTH GATES
+  https://api.commandcode.ai/alpha/whoami -> auth-required (401 without token)
+  https://api.commandcode.ai/internal/models -> auth-required (401 without token)
+  https://api.commandcode.ai/provider -> unreachable/other (404)
+  https://api.commandcode.ai/provider/v1 -> unreachable/other (404)
+  https://api.commandcode.ai/provider/v1/chat/completions -> auth-required (401 without token)
+  https://api.commandcode.ai/provider/v1/deals -> unreachable/other (404)
+  https://api.commandcode.ai/provider/v1/messages -> auth-required (401 without token)
+  https://api.commandcode.ai/provider/v1/models -> public (200 without token)
+  https://api.commandcode.ai/provider/v1/models/pricing -> unreachable/other (404)
+  https://api.commandcode.ai/provider/v1/pricing -> unreachable/other (404)
+  https://api.commandcode.ai/provider/v1/responses -> auth-required (401 without token)
+  https://api.commandcode.ai/provider/v1/systemone -> auth-required (401 without token)
+  https://api.commandcode.ai/v1/models -> unreachable/other (404)
+  https://commandcode.ai/api/cli/models -> unreachable/other (404)
+  https://commandcode.ai/api/deals -> unreachable/other (404)
+  https://commandcode.ai/api/models -> unreachable/other (404)
+  https://commandcode.ai/api/pricing -> unreachable/other (404)
+  https://commandcode.ai/api/v1/models -> unreachable/other (404)

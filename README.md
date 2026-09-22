@@ -82,3 +82,9 @@ auth, no retries. Quota instruments stop at the wall.
   (`analyze.py`). Found what static analysis could not: `POST
   github.com/login/device/code` (copilot device flow) and the lazy
   `@byokkit/*` provider-install channel. See `mitm/README.md`.
+
+Both harnesses auto-write human reports alongside the JSON:
+`spec/REPORT.md` + `spec/REPORT.txt` (models, prices, deals, auth
+from the latest spec) and `mitm/captures/REPORT.md` + `REPORT.txt`
+(per-run outcomes, endpoint and spawn tables). Re-render any time
+with `cc_routes.py --report-only` / `analyze.py` (no network needed).

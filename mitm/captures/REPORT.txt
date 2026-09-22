@@ -1,0 +1,69 @@
+CLI DRIVE REPORT v1.62.1 (bun)
+22 runs, 178 events, 30 endpoints, 1 new. 2026-09-22T09:19:01Z .. 2026-09-22T09:19:42Z
+
+RUNS
+  cmd --help                                       rc=0        0.6s events=4
+  cmd --version                                    rc=0        0.5s events=4
+  cmd --list-models                                rc=0        2.8s events=10
+  cmd info                                         rc=0        2.8s events=20
+  cmd status                                       rc=1        0.5s events=4
+  cmd whoami                                       rc=1        0.5s events=4
+  cmd update --check-only                          rc=0        2.8s events=10
+  cmd login                                        rc=0        3.0s events=30
+  cmd auth login                                   rc=1        0.5s events=4
+  cmd login copilot                                rc=0        10.1s events=67
+  cmd login anthropic                              rc=0        2.9s events=10
+  cmd login openai                                 rc=0        2.9s events=10
+  cmd -m no-such-model-xyz -p hi                   rc=1        0.6s events=4
+  cmd -p say ok --no-session                       rc=3        0.5s events=4
+  cmd taste --help                                 rc=0        0.5s events=4
+  cmd mcp --help                                   rc=0        0.5s events=4
+  cmd skills --help                                rc=0        0.5s events=4
+  cmd mods --help                                  rc=0        0.5s events=4
+  cmd mcp list                                     rc=0        2.7s events=9
+  cmd mods list                                    rc=0        4.1s events=10
+  cmd skills list                                  rc=0        0.5s events=4
+  cmd taste list                                   rc=0        0.6s events=8
+
+ENDPOINTS
+   10  GET api.commandcode.ai/alpha/whoami                                          [401]
+    1  GET registry.npmjs.org/@ai-sdk%2fgateway                                     [200]
+    1  GET registry.npmjs.org/@ai-sdk%2fopenai                                      [200]
+    1  GET registry.npmjs.org/@ai-sdk%2fprovider                                    [200]
+    2  GET registry.npmjs.org/@ai-sdk%2fprovider-utils                              [200]
+    1  GET registry.npmjs.org/@ai-sdk/gateway/-/gateway-3.0.197.tgz                 [200]
+    1  GET registry.npmjs.org/@ai-sdk/openai/-/openai-3.0.115.tgz                   [200]
+    1  GET registry.npmjs.org/@ai-sdk/provider-utils/-/provider-utils-4.0.52.tgz    [200]
+    1  GET registry.npmjs.org/@ai-sdk/provider/-/provider-3.0.16.tgz                [200]
+    1  GET registry.npmjs.org/@byokkit%2fcmd-provider-copilot                       [200]
+    1  GET registry.npmjs.org/@byokkit/cmd-provider-copilot/-/cmd-provider-copilot- [200]
+    1  GET registry.npmjs.org/@opentelemetry%2fapi                                  [200]
+    1  GET registry.npmjs.org/@opentelemetry/api/-/api-1.9.1.tgz                    [200]
+    1  GET registry.npmjs.org/@standard-schema%2fspec                               [200]
+    1  GET registry.npmjs.org/@standard-schema/spec/-/spec-1.1.0.tgz                [200]
+    1  GET registry.npmjs.org/@vercel%2foidc                                        [200]
+    1  GET registry.npmjs.org/@vercel/oidc/-/oidc-3.2.0.tgz                         [200]
+    1  GET registry.npmjs.org/ai                                                    [200]
+    1  GET registry.npmjs.org/ai/-/ai-6.0.287.tgz                                   [200]
+   22  GET registry.npmjs.org/command-code                                          [200]
+    1  GET registry.npmjs.org/eventsource-parser                                    [200]
+    1  GET registry.npmjs.org/eventsource-parser/-/eventsource-parser-3.1.1.tgz     [200]
+    1  GET registry.npmjs.org/json-schema                                           [200]
+    1  GET registry.npmjs.org/json-schema/-/json-schema-0.4.0.tgz                   [200]
+   21  GET registry.npmjs.org/npm                                                   [200]
+    1  GET registry.npmjs.org/undici                                                [200]
+    1  GET registry.npmjs.org/undici/-/undici-6.28.1.tgz                            [200]
+    1  GET registry.npmjs.org/zod                                                   [200]
+    1  GET registry.npmjs.org/zod/-/zod-4.6.5.tgz                                   [200]
+    1  POST github.com/login/device/code                                            [200]
+
+SPAWNS
+   22  exec       npm view command-code versions --json
+   28  execFileSync tput
+    1  execSync   cmd --version
+   22  execSync   git branch --show-current
+    1  execSync   ps -p 3702 -o comm=
+    1  spawn      lock='/tmp/mitm-work/home-09/.commandcode/cache/providers/@byokkit/cmd
+
+NEW SURFACE
+  POST github.com/login/device/code [200]
