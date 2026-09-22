@@ -1,0 +1,7 @@
+# ---> managed by cc_routes.py; local fetch cache, safe to delete
+cli.tgz
+cli.mjs
+asset_*.js
+docs_*.html
+npm-latest.json
+sitemap.xml

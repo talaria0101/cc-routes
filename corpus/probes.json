@@ -1,0 +1,339 @@
+[
+  {
+    "url": "https://api.commandcode.ai/alpha/whoami",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": true,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 401
+    },
+    "get_status": 401,
+    "post_status": null,
+    "bytes": 182,
+    "why": "auth-gate-check"
+  },
+  {
+    "url": "https://api.commandcode.ai/internal/models",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": true,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 401
+    },
+    "get_status": 401,
+    "post_status": null,
+    "bytes": 186,
+    "why": "auth-gate-check"
+  },
+  {
+    "url": "https://api.commandcode.ai/provider",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": false,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 404
+    },
+    "get_status": 404,
+    "post_status": null,
+    "bytes": 211,
+    "why": "discovered-docs"
+  },
+  {
+    "url": "https://api.commandcode.ai/provider/v1",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": false,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 404
+    },
+    "get_status": 404,
+    "post_status": null,
+    "bytes": 214,
+    "why": "discovered-docs"
+  },
+  {
+    "url": "https://api.commandcode.ai/provider/v1/chat/completions",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": true,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 401,
+      "post_unauth": 401
+    },
+    "get_status": 401,
+    "post_status": 401,
+    "bytes": 182,
+    "why": "static-sweep"
+  },
+  {
+    "url": "https://api.commandcode.ai/provider/v1/deals",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": false,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 404
+    },
+    "get_status": 404,
+    "post_status": null,
+    "bytes": 220,
+    "why": "static-sweep"
+  },
+  {
+    "url": "https://api.commandcode.ai/provider/v1/messages",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": true,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 401,
+      "post_unauth": 401
+    },
+    "get_status": 401,
+    "post_status": 401,
+    "bytes": 182,
+    "why": "static-sweep"
+  },
+  {
+    "url": "https://api.commandcode.ai/provider/v1/models",
+    "flags": {
+      "model_listing": true,
+      "prices": false,
+      "deals": false,
+      "free_models": true,
+      "auth_required": false,
+      "reachable_unauth": true
+    },
+    "detail": {
+      "get": 200,
+      "models": 76,
+      "sample_ids": [
+        "claude-sonnet-5",
+        "claude-sonnet-4-6",
+        "claude-fable-5-1",
+        "claude-fable-5",
+        "claude-opus-5"
+      ],
+      "has_supported_endpoints": true
+    },
+    "get_status": 200,
+    "post_status": null,
+    "bytes": 14963,
+    "why": "static-sweep"
+  },
+  {
+    "url": "https://api.commandcode.ai/provider/v1/models/pricing",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": false,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 404
+    },
+    "get_status": 404,
+    "post_status": null,
+    "bytes": 229,
+    "why": "static-sweep"
+  },
+  {
+    "url": "https://api.commandcode.ai/provider/v1/pricing",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": false,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 404
+    },
+    "get_status": 404,
+    "post_status": null,
+    "bytes": 222,
+    "why": "static-sweep"
+  },
+  {
+    "url": "https://api.commandcode.ai/provider/v1/responses",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": true,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 401,
+      "post_unauth": 401
+    },
+    "get_status": 401,
+    "post_status": 401,
+    "bytes": 182,
+    "why": "static-sweep"
+  },
+  {
+    "url": "https://api.commandcode.ai/provider/v1/systemone",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": true,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 401,
+      "post_unauth": 401
+    },
+    "get_status": 401,
+    "post_status": 401,
+    "bytes": 182,
+    "why": "static-sweep"
+  },
+  {
+    "url": "https://api.commandcode.ai/v1/models",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": false,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 404
+    },
+    "get_status": 404,
+    "post_status": null,
+    "bytes": 212,
+    "why": "static-sweep"
+  },
+  {
+    "url": "https://commandcode.ai/api/cli/models",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": false,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 404
+    },
+    "get_status": 404,
+    "post_status": null,
+    "bytes": 22,
+    "why": "static-sweep"
+  },
+  {
+    "url": "https://commandcode.ai/api/deals",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": false,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 404
+    },
+    "get_status": 404,
+    "post_status": null,
+    "bytes": 22,
+    "why": "static-sweep"
+  },
+  {
+    "url": "https://commandcode.ai/api/models",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": false,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 404
+    },
+    "get_status": 404,
+    "post_status": null,
+    "bytes": 22,
+    "why": "static-sweep"
+  },
+  {
+    "url": "https://commandcode.ai/api/pricing",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": false,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 404
+    },
+    "get_status": 404,
+    "post_status": null,
+    "bytes": 22,
+    "why": "static-sweep"
+  },
+  {
+    "url": "https://commandcode.ai/api/v1/models",
+    "flags": {
+      "model_listing": false,
+      "prices": false,
+      "deals": false,
+      "free_models": false,
+      "auth_required": false,
+      "reachable_unauth": false
+    },
+    "detail": {
+      "get": 404
+    },
+    "get_status": 404,
+    "post_status": null,
+    "bytes": 22,
+    "why": "static-sweep"
+  }
+]
