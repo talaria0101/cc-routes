@@ -1,7 +1,7 @@
 {
   "version": "1.62.1",
   "runner": "bun",
-  "started": "2026-09-22T09:19:01Z",
+  "started": "2026-09-22T09:43:37Z",
   "cli_bundle": "/tmp/mitm-work/cli-1.62.1/package/dist/cli.mjs",
   "runs": [
     {
@@ -9,7 +9,7 @@
         "--help"
       ],
       "rc": 0,
-      "seconds": 0.6,
+      "seconds": 0.9,
       "log": "run00---help.jsonl",
       "stdout_tail": "Learn taste from the current repository\n  cmd taste learn owner/repo        Learn taste from a GitHub repository\n  cmd --add-dir ../shared           Start with additional directory scope\n  cmd info                          Show system information\n  cmd feedback \"title\"              Open feedback form with title\n\n\u276f Start with a prompt: cmd \"fix the login bug\"\n\nLinks\n  Documentation                     https://commandcode.ai/docs\n  Discord Community                 https://commandcode.ai/discord\n\n",
       "name": "run00---help",
@@ -42,9 +42,9 @@
         "info"
       ],
       "rc": 0,
-      "seconds": 2.8,
+      "seconds": 2.9,
       "log": "run03-info.jsonl",
-      "stdout_tail": "\u2500\u2500\u2500 System Information \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\u25cf Version     Unknown\n\u25cf Date        2026-09-22\n\u276f Platform    Linux (linux, x64)\n\u25b2 Hostname    sandbox\n\u25cf User        unknown\n\u25cf CPUs        16 cores\n\u25cf Memory      30 GB\n\u25b6 Uptime      6d 8h 12m\n\u2192 Home        /tmp/mitm-work/home-03\n\u276f Shell       python3\n\u25cf Node        v26.3.0\n\u276f Terminal    Unknown\n\u25cf IDE         N/A\n\n",
+      "stdout_tail": "\u2500\u2500\u2500 System Information \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\u25cf Version     Unknown\n\u25cf Date        2026-09-22\n\u276f Platform    Linux (linux, x64)\n\u25b2 Hostname    sandbox\n\u25cf User        unknown\n\u25cf CPUs        16 cores\n\u25cf Memory      30 GB\n\u25b6 Uptime      6d 8h 36m\n\u2192 Home        /tmp/mitm-work/home-03\n\u276f Shell       python3\n\u25cf Node        v26.3.0\n\u276f Terminal    Unknown\n\u25cf IDE         N/A\n\n",
       "name": "run03-info",
       "events": 20
     },
@@ -76,7 +76,7 @@
         "--check-only"
       ],
       "rc": 0,
-      "seconds": 2.8,
+      "seconds": 4.0,
       "log": "run06-update---check-only.jsonl",
       "stdout_tail": "Please check your internet connection or try again later.\n",
       "name": "run06-update---check-only",
@@ -87,7 +87,7 @@
         "login"
       ],
       "rc": 0,
-      "seconds": 3.0,
+      "seconds": 2.9,
       "log": "run07-login.jsonl",
       "stdout_tail": "i-1.62.1/package/node_modules/rea\n  MountEffects             ct-reconciler/cjs/react-reconciler.development.js:12\n                           934:11)\n -commitPassiveMountO (/tmp/mitm-work/cli-1.62.1/package/node_modules/react-rec\n  Fiber              onciler/cjs/react-reconciler.development.js:12999:11)\n -recursivelyTraversePassiv (/tmp/mitm-work/cli-1.62.1/package/node_modules/rea\n  MountEffects             ct-reconciler/cjs/react-reconciler.development.js:12\n                           934:11)\n\n",
       "name": "run07-login",
@@ -111,7 +111,7 @@
         "copilot"
       ],
       "rc": 0,
-      "seconds": 10.1,
+      "seconds": 7.7,
       "log": "run09-login-copilot.jsonl",
       "stdout_tail": "  Logging into Copilot, use this code: ***\n\n\u001b[?25l\u2502\n\u25c6  Press Enter to open GitHub and paste the code there.\n\u2502  \u25cf Open / \u25cb Cancel\n\u2514\n",
       "name": "run09-login-copilot",
@@ -149,7 +149,7 @@
         "hi"
       ],
       "rc": 1,
-      "seconds": 0.6,
+      "seconds": 0.5,
       "log": "run12--m-no-such-model-xyz--p-hi.jsonl",
       "stdout_tail": "",
       "name": "run12--m-no-such-model-xyz--p-hi",
@@ -210,7 +210,7 @@
         "--help"
       ],
       "rc": 0,
-      "seconds": 0.5,
+      "seconds": 0.4,
       "log": "run17-mods---help.jsonl",
       "stdout_tail": "name or by its\n                                  package source\n  list|ls [options]               List the mods a session loads, and where each\n                                  one comes from\n  update|up                       Reinstall and reconcile every configured mod\n                                  package\n  open [options]                  Open the mods directory (project by default,\n                                  --user for ~)\n  help [command]                  display help for command\n",
       "name": "run17-mods---help",
@@ -222,11 +222,11 @@
         "list"
       ],
       "rc": 0,
-      "seconds": 2.7,
+      "seconds": 5.3,
       "log": "run18-mcp-list.jsonl",
       "stdout_tail": "\nNo MCP servers configured\n\nAdd a server with:\n  cmd mcp add --transport http <name> <url>\n  cmd mcp add --transport stdio <name> -- <command>\n\nDocs: https://commandcode.ai/docs/mcp\n",
       "name": "run18-mcp-list",
-      "events": 9
+      "events": 10
     },
     {
       "args": [
@@ -234,7 +234,7 @@
         "list"
       ],
       "rc": 0,
-      "seconds": 4.1,
+      "seconds": 2.9,
       "log": "run19-mods-list.jsonl",
       "stdout_tail": "\nMods (0)\n\n  No mods loaded. Looking in:\n    ~/.commandcode/mods (user)\n\n  Drop a .ts file in one (`cmd mods open --user`) or install a package: `cmd mods add <source>`.\n\n",
       "name": "run19-mods-list",
@@ -258,12 +258,12 @@
         "list"
       ],
       "rc": 0,
-      "seconds": 0.6,
+      "seconds": 1.0,
       "log": "run21-taste-list.jsonl",
       "stdout_tail": "\nNo taste packages found in project\n",
       "name": "run21-taste-list",
-      "events": 8
+      "events": 7
     }
   ],
-  "finished": "2026-09-22T09:19:42Z"
+  "finished": "2026-09-22T09:44:18Z"
 }

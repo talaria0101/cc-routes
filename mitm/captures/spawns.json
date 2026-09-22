@@ -83,7 +83,7 @@
   },
   {
     "call": "execSync",
-    "cmd": "ps -p 3702 -o comm=",
+    "cmd": "ps -p 5396 -o comm=",
     "hits": 1,
     "runs": [
       "info"

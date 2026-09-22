@@ -88,3 +88,16 @@ Both harnesses auto-write human reports alongside the JSON:
 from the latest spec) and `mitm/captures/REPORT.md` + `REPORT.txt`
 (per-run outcomes, endpoint and spawn tables). Re-render any time
 with `cc_routes.py --report-only` / `analyze.py` (no network needed).
+
+One command refreshes everything: `./run.sh` (full pipeline),
+`./run.sh --report-only` (re-render reports from committed data, works
+on a fresh clone with no network). `./run.sh --offline` rebuilds the
+spec from an existing `corpus/` (needs a prior full run: the large
+fetch cache is gitignored, only snapshots are committed).
+
+Good data is never overwritten with bad data: every writer validates
+before touching committed files (non-empty sections, no major count
+collapses vs the prior spec, capture floors for the drive) and exits
+non-zero keeping the old outputs; `--force` overrides. All writes
+are atomic (tmp + rename) and the prior spec is kept as
+`spec/api-spec.prev.json`.

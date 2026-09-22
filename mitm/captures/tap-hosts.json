@@ -1,0 +1,97 @@
+[
+  {
+    "host": "127.0.0.1",
+    "hits": 1,
+    "evidence": [
+      "dns"
+    ],
+    "runs": [
+      "run07-login"
+    ],
+    "known": true,
+    "seen_by_hook": false
+  },
+  {
+    "host": "api.axiom.co",
+    "hits": 14,
+    "evidence": [
+      "dns"
+    ],
+    "runs": [
+      "run02---list-models",
+      "run03-info",
+      "run06-update---check-only",
+      "run07-login",
+      "run09-login-copilot",
+      "run10-login-anthropic"
+    ],
+    "known": false,
+    "seen_by_hook": false
+  },
+  {
+    "host": "api.commandcode.ai",
+    "hits": 31,
+    "evidence": [
+      "connect_line",
+      "sni"
+    ],
+    "runs": [
+      "run00---help",
+      "run01---version",
+      "run02---list-models",
+      "run03-info",
+      "run04-status",
+      "run05-whoami"
+    ],
+    "known": true,
+    "seen_by_hook": true
+  },
+  {
+    "host": "github.com",
+    "hits": 2,
+    "evidence": [
+      "connect_line",
+      "sni"
+    ],
+    "runs": [
+      "run09-login-copilot"
+    ],
+    "known": true,
+    "seen_by_hook": true
+  },
+  {
+    "host": "ingestion.claicode.com",
+    "hits": 14,
+    "evidence": [
+      "dns"
+    ],
+    "runs": [
+      "run02---list-models",
+      "run03-info",
+      "run06-update---check-only",
+      "run07-login",
+      "run09-login-copilot",
+      "run10-login-anthropic"
+    ],
+    "known": false,
+    "seen_by_hook": false
+  },
+  {
+    "host": "registry.npmjs.org",
+    "hits": 114,
+    "evidence": [
+      "connect_line",
+      "sni"
+    ],
+    "runs": [
+      "run00---help",
+      "run01---version",
+      "run02---list-models",
+      "run03-info",
+      "run04-status",
+      "run05-whoami"
+    ],
+    "known": true,
+    "seen_by_hook": true
+  }
+]

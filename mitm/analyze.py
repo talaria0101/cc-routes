@@ -75,8 +75,9 @@ def run_table_md(manifest):
     return lines
 
 
-def write_reports(capdir, manifest, out_eps, spawns, new, total_events,
-                  bundle):
+def build_reports(manifest, out_eps, spawns, new, total_events,
+                  bundle, tap_summary=(), unknown=()):
+    """Returns (markdown, text) strings; callers write them (atomically)."""
     ver = manifest.get("version", "?")
     n_runs = len(manifest.get("runs", []))
     win = f"{manifest.get('started', '?')} .. " \
@@ -135,9 +136,20 @@ def write_reports(capdir, manifest, out_eps, spawns, new, total_events,
            "--spec ../spec/api-spec.json",
            "```",
            ""]
-    with open(os.path.join(capdir, "REPORT.md"), "w") as f:
-        f.write("\n".join(md))
-    tx = [f"CLI DRIVE REPORT v{ver} ({manifest.get('runner', '?')})",
+    if tap_summary:
+        md += ["", "## Tap host allowlist verdict", ""]
+        for t in tap_summary:
+            mark = "ok" if t["known"] else "UNKNOWN"
+            why = KNOWN_HOSTS.get(t["host"], "NOT IN ALLOWLIST")
+            md.append(f"- [{mark}] `{t['host']}` hits={t['hits']} "
+                      f"via {','.join(t['evidence'])} ({why})")
+        if unknown:
+            md += ["", "Verdict: FAIL - unknown hosts need a reason "
+                   "before they join the allowlist."]
+        else:
+            md += ["", "Verdict: PASS - no unknown hosts."]
+    md += [""]
+    tx = [f"CLI DRIVE REPORT v{ver} ({manifest.get('runner', '?')})", 
           f"{n_runs} runs, {total_events} events, "
           f"{len(out_eps)} endpoints, {len(new)} new. {win}",
           "", "RUNS"]
@@ -154,8 +166,126 @@ def write_reports(capdir, manifest, out_eps, spawns, new, total_events,
     tx += ["", "NEW SURFACE"]
     tx += [f"  {e['endpoint']} {e['statuses']}" for e in new] or \
         ["  none"]
-    with open(os.path.join(capdir, "REPORT.txt"), "w") as f:
-        f.write("\n".join(tx) + "\n")
+    if tap_summary:
+        tx += ["", "TAP HOSTS"]
+        for t in tap_summary:
+            mark = "ok" if t["known"] else "UNKNOWN"
+            tx.append(f"  [{mark}] {t['host']:30} hits={t['hits']} "
+                      f"{','.join(t['evidence'])}")
+        tx.append("  verdict: " +
+                  ("FAIL - unknown hosts" if unknown else "PASS"))
+    return "\n".join(md), "\n".join(tx) + "\n"
+
+
+# host -> why it is known. Derived from bundle pins + observed-and-explained
+# traffic, never guessed: update with a reason when adding.
+KNOWN_HOSTS = {
+    "api.commandcode.ai": "provider API (bundle API_BASE_URLS + docs)",
+    "api.axiom.co": "telemetry backend (bundle AXIOM_ENDPOINT; "
+    "DNS-only without auth key, observed live)",
+    "ingestion.claicode.com": "telemetry backend (bundle ingestion URL; "
+    "DNS-only without auth key, observed live)",
+    "commandcode.ai": "docs/site links opened from CLI text",
+    "registry.npmjs.org": "update check via npm child; @byokkit "
+    "provider lazy-installs",
+    "github.com": "copilot provider GitHub device flow "
+    "(POST /login/device/code, observed live)",
+    "169.254.169.1": "sandbox egress proxy transport, not a destination",
+    "127.0.0.1": "local-only/BYOK target (no listener here)",
+    "localhost": "local-only/BYOK target (no listener here)",
+}
+
+# Transport-only evidence: the egress proxy address, never a destination.
+TRANSPORT_IPS = {"169.254.169.1"}
+
+
+def parse_netlogs(capdir):
+    """Merge per-run CC_NETLOG files: host -> {runs, evs, comms}."""
+    hosts = {}
+    files = 0
+    for path in sorted(glob.glob(os.path.join(capdir, "*.net.log"))):
+        files += 1
+        run = os.path.basename(path).replace(".net.log", "")
+        try:
+            lines = open(path).read().splitlines()
+        except FileNotFoundError:
+            continue
+        for line in lines:
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            ev, d = r.get("ev"), r.get("d", "")
+            host = None
+            if ev in ("dns", "sni"):
+                host = d.split(":")[0].lower()
+            elif ev == "connect_line":
+                host = d.split(":")[0].lower()
+            elif ev == "connect":
+                ip = d.split(":")[0]
+                if ip in TRANSPORT_IPS:
+                    continue
+                host = ip
+            if not host:
+                continue
+            h = hosts.setdefault(host, {"runs": set(), "evs": set(),
+                                        "comms": set(), "hits": 0})
+            h["hits"] += 1
+            h["runs"].add(run)
+            h["evs"].add(ev)
+            h["comms"].add(r.get("comm", "?"))
+    return hosts, files
+
+
+def atomic_write(path, data):
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        f.write(data)
+    os.replace(tmp, path)
+
+
+def report_only(args):
+    """Re-render human reports from committed curated JSONs only.
+
+    Needs no raw logs (*.jsonl, *.net.log are gitignored) and no
+    network: works on a fresh clone. Never touches the curated JSONs.
+    """
+    cap = args.captures
+    try:
+        manifest = json.load(open(os.path.join(cap, "manifest.json")))
+        out_eps = json.load(open(os.path.join(cap, "endpoints.json")))
+        spawns_j = json.load(open(os.path.join(cap, "spawns.json")))
+        tap_summary = json.load(open(os.path.join(cap, "tap-hosts.json")))
+    except FileNotFoundError as e:
+        print(f"report-only needs curated JSONs: {e}", flush=True)
+        return 2
+    spawns = {}
+    for s in spawns_j:
+        spawns[(s["call"], s["cmd"])] = {
+            "hits": s["hits"], "runs": set(s["runs"]),
+            "args": set(s.get("args_sample", []))}
+    unknown = [t["host"] for t in tap_summary if not t.get("known")]
+    new = [e for e in out_eps if is_new_report_only(e)]
+    total_events = sum(r.get("events", 0)
+                       for r in manifest.get("runs", []))
+    bundle = manifest.get("cli_bundle", "n/a")
+    md_s, tx_s = build_reports(manifest, out_eps, spawns, new,
+                               total_events, bundle, tap_summary, unknown)
+    atomic_write(os.path.join(cap, "REPORT.md"), md_s)
+    atomic_write(os.path.join(cap, "REPORT.txt"), tx_s)
+    print(f"report-only: {len(manifest.get('runs', []))} runs, "
+          f"{len(out_eps)} endpoints re-rendered -> {cap}")
+    return 0
+
+
+def is_new_report_only(e):
+    if e.get("in_static_bundle") is False:
+        return True
+    if e.get("in_prior_spec") is False:
+        return True
+    if e.get("host") not in ("api.commandcode.ai", "registry.npmjs.org"):
+        return e.get("in_static_bundle") is None
+    return False
 
 
 def main():
@@ -165,7 +295,18 @@ def main():
                     default=os.path.join(HERE, "..", "spec", "api-spec.json"))
     ap.add_argument("--no-report", action="store_true",
                     help="skip REPORT.md / REPORT.txt")
+    ap.add_argument("--force", action="store_true",
+                    help="write outputs even when validation floors fail")
+    ap.add_argument("--min-events-per-run", type=float, default=1.0,
+                    help="refuse to overwrite unless avg events/run >= this")
+    ap.add_argument("--report-only", action="store_true",
+                    help="re-render REPORT.md/.txt from committed curated "
+                    "JSONs only (no raw logs, no network, no validation "
+                    "floors); for fresh clones and offline use")
     args = ap.parse_args()
+
+    if args.report_only:
+        return report_only(args)
 
     try:
         manifest = json.load(open(
@@ -251,19 +392,55 @@ def main():
                               if full_api else None),
             "auth_gate_observed": e["auth_401"],
         })
-    with open(os.path.join(args.captures, "endpoints.json"), "w") as f:
-        json.dump(out_eps, f, indent=2)
+    # ---- netlog tap merge + host allowlist verdict ----
+    tap_hosts, tap_files = parse_netlogs(args.captures)
+    hook_hosts = {e["host"] for e in out_eps}
+    blind = {h: v for h, v in tap_hosts.items()
+             if h not in hook_hosts and h not in TRANSPORT_IPS}
+    unknown = {h: v for h, v in tap_hosts.items() if h not in KNOWN_HOSTS}
+    tap_summary = [{"host": h, "hits": v["hits"],
+                    "evidence": sorted(v["evs"]),
+                    "runs": sorted(v["runs"])[:6],
+                    "known": h in KNOWN_HOSTS,
+                    "seen_by_hook": h in hook_hosts}
+                   for h, v in sorted(tap_hosts.items())]
+
+    # ---- validation floors: never overwrite good data with bad/empty ----
+    n_runs = len(manifest.get("runs", []))
+    avg = (total_events / n_runs) if n_runs else 0
+    problems = []
+    if n_runs == 0:
+        problems.append("no runs in manifest")
+    if total_events == 0:
+        problems.append("zero captured events (hook dead?)")
+    if avg < args.min_events_per_run:
+        problems.append(f"avg events/run {avg:.2f} < floor "
+                        f"{args.min_events_per_run} (partial capture?)")
+    if len(out_eps) == 0:
+        problems.append("zero unique endpoints (network down?)")
+    if tap_files == 0:
+        problems.append("no netlog tap files (LD_PRELOAD ineffective? "
+                        "cross-check missing)")
+    if problems and not args.force:
+        print("REFUSING to overwrite curated outputs:", flush=True)
+        for p in problems:
+            print(f"  - {p}", flush=True)
+        print("kept previous outputs; re-run or pass --force",
+              flush=True)
+        return 2
+    for p in problems:
+        print(f"WARNING (--force): {p}", flush=True)
+
+    atomic_write(os.path.join(args.captures, "endpoints.json"),
+                 json.dumps(out_eps, indent=2))
+    atomic_write(os.path.join(args.captures, "tap-hosts.json"),
+                 json.dumps(tap_summary, indent=2))
 
     # New = api/CLI surface absent from the static tables, plus any
     # non-npm third-party host the CLI itself contacts (npm-child
     # registry traffic is expected and reported separately).
-    def is_new(e):
-        if e["in_static_bundle"] is False or e["in_prior_spec"] is False:
-            return True
-        if e["host"] not in ("api.commandcode.ai", "registry.npmjs.org"):
-            return e["in_static_bundle"] is None  # unseen third party
-        return False
-    new = [e for e in out_eps if is_new(e)]
+    # Shared with --report-only via is_new_report_only (same predicate).
+    new = [e for e in out_eps if is_new_report_only(e)]
     lines = ["# Runtime-observed endpoints missing from static tables",
              "",
              f"Bundle: `{bundle or 'n/a'}`.",
@@ -283,19 +460,44 @@ def main():
         lines.append("None: every runtime endpoint is already in the "
                      "static tables.")
         lines.append("")
-    with open(os.path.join(args.captures, "NEW_ENDPOINTS.md"), "w") as f:
-        f.write("\n".join(lines))
+    lines += ["## Tap host allowlist verdict", ""]
+    if tap_hosts:
+        for t in tap_summary:
+            mark = "ok" if t["known"] else "UNKNOWN"
+            why = KNOWN_HOSTS.get(t["host"], "NOT IN ALLOWLIST")
+            lines.append(f"- [{mark}] `{t['host']}` hits={t['hits']} "
+                         f"via {','.join(t['evidence'])} ({why})")
+    else:
+        lines.append("- no tap data (files missing or tap ineffective)")
+    if blind:
+        lines += ["",
+                  "Hook blind spots (tap saw host, hook saw no URL):"]
+        for h in sorted(blind):
+            lines.append(f"- `{h}`")
+    lines.append("")
+    atomic_write(os.path.join(args.captures, "NEW_ENDPOINTS.md"),
+                 "\n".join(lines))
 
-    with open(os.path.join(args.captures, "spawns.json"), "w") as f:
-        json.dump([{"call": k[0], "cmd": k[1], "hits": v["hits"],
-                    "runs": sorted(v["runs"]),
-                    "args_sample": sorted(v["args"])[:6]}
-                   for k, v in sorted(spawns.items())], f, indent=2)
+    atomic_write(os.path.join(args.captures, "spawns.json"),
+                 json.dumps([{"call": k[0], "cmd": k[1],
+                              "hits": v["hits"],
+                              "runs": sorted(v["runs"]),
+                              "args_sample": sorted(v["args"])[:6]}
+                             for k, v in sorted(spawns.items())],
+                            indent=2))
     if not args.no_report:
-        write_reports(args.captures, manifest, out_eps, spawns, new,
-                      total_events, bundle)
+        md_s, tx_s = build_reports(manifest, out_eps, spawns, new,
+                                   total_events, bundle, tap_summary,
+                                   unknown)
+        atomic_write(os.path.join(args.captures, "REPORT.md"), md_s)
+        atomic_write(os.path.join(args.captures, "REPORT.txt"), tx_s)
+    # Exit contract (mirrors oc-routes): 0 clean, 1 unknown hosts (needs a
+    # reason before joining the allowlist), 2 validation refusal (above).
+    rc = 1 if unknown else 0
     print(f"events: {total_events}, unique endpoints: {len(out_eps)}, "
-          f"new: {len(new)}, unique spawns: {len(spawns)}")
+          f"new: {len(new)}, unique spawns: {len(spawns)}, "
+          f"tap hosts: {len(tap_hosts)} ({len(unknown)} unknown) "
+          f"-> exit {rc}")
     for e in out_eps:
         print(f"  {e['hits']:3}  {e['endpoint']:80} "
               f"{e['statuses']}")
@@ -303,6 +505,7 @@ def main():
     for (call, cmd), v in sorted(spawns.items()):
         print(f"  {v['hits']:3}  {call:10} {cmd[:90]} "
               f"[{', '.join(sorted(v['runs'])[:4])}]")
+    return rc
 
 
 if __name__ == "__main__":

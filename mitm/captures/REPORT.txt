@@ -1,32 +1,32 @@
 CLI DRIVE REPORT v1.62.1 (bun)
-22 runs, 178 events, 30 endpoints, 1 new. 2026-09-22T09:19:01Z .. 2026-09-22T09:19:42Z
+22 runs, 232 events, 30 endpoints, 1 new. 2026-09-22T09:43:37Z .. 2026-09-22T09:44:18Z
 
 RUNS
-  cmd --help                                       rc=0        0.6s events=4
+  cmd --help                                       rc=0        0.9s events=4
   cmd --version                                    rc=0        0.5s events=4
   cmd --list-models                                rc=0        2.8s events=10
-  cmd info                                         rc=0        2.8s events=20
+  cmd info                                         rc=0        2.9s events=20
   cmd status                                       rc=1        0.5s events=4
   cmd whoami                                       rc=1        0.5s events=4
-  cmd update --check-only                          rc=0        2.8s events=10
-  cmd login                                        rc=0        3.0s events=30
+  cmd update --check-only                          rc=0        4.0s events=10
+  cmd login                                        rc=0        2.9s events=30
   cmd auth login                                   rc=1        0.5s events=4
-  cmd login copilot                                rc=0        10.1s events=67
+  cmd login copilot                                rc=0        7.7s events=67
   cmd login anthropic                              rc=0        2.9s events=10
   cmd login openai                                 rc=0        2.9s events=10
-  cmd -m no-such-model-xyz -p hi                   rc=1        0.6s events=4
+  cmd -m no-such-model-xyz -p hi                   rc=1        0.5s events=4
   cmd -p say ok --no-session                       rc=3        0.5s events=4
   cmd taste --help                                 rc=0        0.5s events=4
   cmd mcp --help                                   rc=0        0.5s events=4
   cmd skills --help                                rc=0        0.5s events=4
-  cmd mods --help                                  rc=0        0.5s events=4
-  cmd mcp list                                     rc=0        2.7s events=9
-  cmd mods list                                    rc=0        4.1s events=10
+  cmd mods --help                                  rc=0        0.4s events=4
+  cmd mcp list                                     rc=0        5.3s events=10
+  cmd mods list                                    rc=0        2.9s events=10
   cmd skills list                                  rc=0        0.5s events=4
-  cmd taste list                                   rc=0        0.6s events=8
+  cmd taste list                                   rc=0        1.0s events=7
 
 ENDPOINTS
-   10  GET api.commandcode.ai/alpha/whoami                                          [401]
+    9  GET api.commandcode.ai/alpha/whoami                                          [401]
     1  GET registry.npmjs.org/@ai-sdk%2fgateway                                     [200]
     1  GET registry.npmjs.org/@ai-sdk%2fopenai                                      [200]
     1  GET registry.npmjs.org/@ai-sdk%2fprovider                                    [200]
@@ -50,7 +50,7 @@ ENDPOINTS
     1  GET registry.npmjs.org/eventsource-parser/-/eventsource-parser-3.1.1.tgz     [200]
     1  GET registry.npmjs.org/json-schema                                           [200]
     1  GET registry.npmjs.org/json-schema/-/json-schema-0.4.0.tgz                   [200]
-   21  GET registry.npmjs.org/npm                                                   [200]
+   18  GET registry.npmjs.org/npm                                                   [200]
     1  GET registry.npmjs.org/undici                                                [200]
     1  GET registry.npmjs.org/undici/-/undici-6.28.1.tgz                            [200]
     1  GET registry.npmjs.org/zod                                                   [200]
@@ -62,8 +62,17 @@ SPAWNS
    28  execFileSync tput
     1  execSync   cmd --version
    22  execSync   git branch --show-current
-    1  execSync   ps -p 3702 -o comm=
+    1  execSync   ps -p 5396 -o comm=
     1  spawn      lock='/tmp/mitm-work/home-09/.commandcode/cache/providers/@byokkit/cmd
 
 NEW SURFACE
   POST github.com/login/device/code [200]
+
+TAP HOSTS
+  [ok] 127.0.0.1                      hits=1 dns
+  [UNKNOWN] api.axiom.co                   hits=14 dns
+  [ok] api.commandcode.ai             hits=31 connect_line,sni
+  [ok] github.com                     hits=2 connect_line,sni
+  [UNKNOWN] ingestion.claicode.com         hits=14 dns
+  [ok] registry.npmjs.org             hits=114 connect_line,sni
+  verdict: FAIL - unknown hosts

@@ -1,6 +1,8 @@
 # raw captures stay local: may contain redacted-but-sensitive flows
 *.jsonl
+*.net.log
 *.stdout.txt
 *.stderr.txt
 work/
 bin-empty/
+*.tmp

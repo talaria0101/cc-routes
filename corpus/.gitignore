@@ -5,3 +5,4 @@ asset_*.js
 docs_*.html
 npm-latest.json
 sitemap.xml
+*.tmp

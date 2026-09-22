@@ -36,16 +36,23 @@ send authenticated traffic and never hammer.
 
 Usage:
   python3 cc_routes.py [--out spec/api-spec.json] [--corpus corpus/]
-                       [--no-fetch-sources] [--spec-only]
+                       [--no-fetch-sources] [--spec-only] [--force]
+                       [--report PATH] [--report-txt PATH] [--no-report]
+                       [--report-only] [--spec PATH]
 
   --no-fetch-sources: skip live re-discovery, reuse corpus/ snapshots.
   --spec-only:       rebuild spec from existing corpus without probing.
+  --force:           write outputs even when validation gates fail.
+  --report-only:     render REPORT.md/.txt from an existing spec only.
+
+Writes are atomic and validated: empty sections or major count
+collapses vs the prior spec refuse the overwrite (exit 2) unless
+--force. The prior spec is kept as <out>.prev.json.
 """
 from __future__ import annotations
 
 import argparse
 import datetime
-import gzip
 import html as htmlmod
 import io
 import json
@@ -115,7 +122,6 @@ PATH_RE = re.compile(
     r'"/(?:provider|internal|alpha|beta)(?:/[A-Za-z0-9/_\-:{}.]+)?"')
 ABS_RE = re.compile(r'https?://[A-Za-z0-9.\-]+(?:/[A-Za-z0-9/_\-:{}.%]*)?')
 ASSET_RE = re.compile(r'(?:src|href)="(/assets/[^"]+\.js[^"]*)"')
-DEAL_ID_RE = re.compile(r'id:"([a-z0-9][a-z0-9\-]*)",title:"([^"]+)"')
 
 
 def fetch(url, method="GET", body=None, headers=None, timeout=TIMEOUT):
@@ -256,8 +262,7 @@ def discover_cli(save):
             if member:
                 js = tf.extractfile(member).read().decode("utf-8",
                                                           "replace")
-                with open(os.path.join(CORPUS, "cli.mjs"), "w") as f:
-                    f.write(js)
+                atomic_write(os.path.join(CORPUS, "cli.mjs"), js)
                 for m in PATH_RE.finditer(js):
                     paths.add(m.group(0).strip('"'))
                 for m in ABS_RE.finditer(js):
@@ -336,8 +341,10 @@ def classify(url, get_resp, post_resp=None):
 def probe(url, save_name=None, do_post=None):
     g = fetch(url)
     if save_name:
-        with open(os.path.join(CORPUS, save_name), "wb") as f:
+        tmp = os.path.join(CORPUS, save_name + ".tmp")
+        with open(tmp, "wb") as f:
             f.write(g.get("body", b""))
+        os.replace(tmp, os.path.join(CORPUS, save_name))
     p = None
     if do_post is not None:
         p = fetch(url, method="POST", body=do_post)
@@ -356,6 +363,12 @@ def build_spec(probe_results, discovery):
         (r for r in probe_results
          if r["url"].endswith("/provider/v1/models") and r["flags"].get(
              "model_listing")), None)
+    deals = scrape_deals_from_corpus()
+    free_by_deal = set()
+    for d in deals:
+        if d.get("multiplier") == 0:
+            for m in d.get("model_ids", []):
+                free_by_deal.add(norm_mid(m))
     models, free_models = [], []
     if models_entry:
         try:
@@ -363,16 +376,18 @@ def build_spec(probe_results, discovery):
                       "rb") as f:
                 js = json.load(f)
             for m in js.get("data", []):
+                mid = m.get("id", "")
+                free = ("free" in str(mid).lower()
+                        or norm_mid(mid) in free_by_deal)
                 models.append({
-                    "id": m.get("id"), "name": m.get("name"),
+                    "id": mid, "name": m.get("name"),
                     "context_length": m.get("context_length"),
                     "supported_endpoints": m.get("supported_endpoints", []),
-                    "free": ("free" in str(m.get("id", "")).lower()),
+                    "free": free,
                 })
             free_models = [m["id"] for m in models if m["free"]]
         except Exception as e:
             models_entry["detail"]["spec_error"] = str(e)
-    deals = scrape_deals_from_corpus()
     prices = scrape_prices_from_corpus()
     interesting = [r for r in probe_results if r["flags"].get(
         "model_listing") or r["flags"].get("prices") or r["flags"].get(
@@ -505,6 +520,21 @@ def scrape_prices_from_corpus():
 CORPUS = "corpus"
 
 
+def _parse_ts(s):
+    if not s:
+        return None
+    try:
+        dt = datetime.datetime.fromisoformat(s.replace("Z", "+00:00"))
+    except Exception:
+        try:
+            dt = datetime.datetime.strptime(s[:10], "%Y-%m-%d")
+        except Exception:
+            return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=datetime.timezone.utc)
+    return dt
+
+
 def deal_status(d, generated_utc):
     """One-line human status for a deal (live / expired / unbounded)."""
     exp = d.get("expires")
@@ -512,12 +542,10 @@ def deal_status(d, generated_utc):
         return f"live ({d['ends_when']})"
     if not exp:
         return "live (no expiry published)"
-    try:
-        exp_dt = exp.replace("Z", "+00:00")
-        alive = exp_dt >= (generated_utc or "")
-    except Exception:
+    exp_dt, gen_dt = _parse_ts(exp), _parse_ts(generated_utc)
+    if exp_dt is None or gen_dt is None:
         return f"expires {exp}"
-    return (f"live (through {exp})" if alive
+    return (f"live (through {exp})" if exp_dt >= gen_dt
             else f"EXPIRED {exp} but still shipped")
 
 
@@ -623,13 +651,11 @@ def render_markdown(spec):
     for d in expired:
         A(f"- `{d['id']}` expired {d.get('expires')} but is still "
           "shipped in the bundle; trust the live probe, not the bundle.")
-    live_ids = {m for d in deals for m in d.get("model_ids", [])}
-    reg_ids = {m.get("id", "").split("/")[-1].lower().replace(
-        ":free", "").replace("-", "")
-        for m in spec.get("models_available", [])}
+    reg_ids = {norm_mid(m.get("id", ""))
+               for m in spec.get("models_available", [])}
     for d in deals:
         for m in d.get("model_ids", []):
-            norm = m.lower().replace(":free", "").replace("-", "")
+            norm = norm_mid(m)
             if norm not in reg_ids and not deal_status(
                     d, gen).startswith("EXPIRED"):
                 A(f"- Deal model `{m}` ({d['id']}) is not in the live "
@@ -701,19 +727,72 @@ def render_text(spec):
     return "\n".join(L) + "\n"
 
 
+def norm_mid(mid):
+    """Normalise a model id for cross-source joins: short name, lower,
+    no :free/-free suffix, no dashes."""
+    s = str(mid or "").split("/")[-1].lower()
+    for suf in (":free", "-free"):
+        if s.endswith(suf):
+            s = s[: -len(suf)]
+    return s.replace("-", "")
+
+
+def atomic_write(path, data):
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        f.write(data)
+    os.replace(tmp, path)
+
+
+def validate_spec(spec, prior):
+    """Returns (errors, warnings). Errors refuse the write (no --force)."""
+    errors, warnings = [], []
+    n_m = spec.get("model_count", 0)
+    n_p = spec.get("prices_n", 0)
+    n_d = len(spec.get("deals_now", []))
+    if n_m == 0:
+        errors.append("zero models (registry fetch/parse broke?)")
+    if n_p == 0:
+        errors.append("zero price rows (pricing table parse broke?)")
+    if n_d == 0:
+        errors.append("zero deals (deals bundle parse broke?)")
+    urls = [e["url"] for e in spec.get("interesting_endpoints", [])]
+    if not any(u.endswith("/provider/v1/models") for u in urls):
+        errors.append("model-listing endpoint missing from interesting set")
+    if not spec.get("auth"):
+        errors.append("empty auth-gate table (probes all failed?)")
+    if prior:
+        pm = prior.get("model_count", 0) or 0
+        pp = prior.get("prices_n", 0) or 0
+        if pm and n_m < max(10, pm // 2):
+            errors.append(f"models collapsed {pm} -> {n_m} "
+                          "(registry drift or truncated fetch?)")
+        elif pm and n_m < pm:
+            warnings.append(f"models shrank {pm} -> {n_m}")
+        if pp and n_p < max(10, pp // 2):
+            errors.append(f"prices collapsed {pp} -> {n_p} "
+                          "(table layout drift?)")
+        elif pp and n_p < pp:
+            warnings.append(f"prices shrank {pp} -> {n_p}")
+        pd = len(prior.get("deals_now", []))
+        if pd and n_d == 0:
+            errors.append(f"deals went {pd} -> 0 (bundle parse broke?)")
+        elif n_d < pd:
+            warnings.append(f"deals shrank {pd} -> {n_d} (expiry? check)")
+    return errors, warnings
+
+
 def write_reports(spec, md_path, txt_path):
     if md_path:
         d = os.path.dirname(md_path)
         if d:
             os.makedirs(d, exist_ok=True)
-        with open(md_path, "w") as f:
-            f.write(render_markdown(spec))
+        atomic_write(md_path, render_markdown(spec))
     if txt_path:
         d = os.path.dirname(txt_path)
         if d:
             os.makedirs(d, exist_ok=True)
-        with open(txt_path, "w") as f:
-            f.write(render_text(spec))
+        atomic_write(txt_path, render_text(spec))
     return [p for p in (md_path, txt_path) if p]
 
 
@@ -735,10 +814,20 @@ def main():
                     "pairs with --spec")
     ap.add_argument("--spec", default=None,
                     help="existing spec to render (with --report-only)")
+    ap.add_argument("--force", action="store_true",
+                    help="write outputs even when validation gates fail")
     args = ap.parse_args()
     if args.report_only:
         spec_path = args.spec or args.out
-        spec = json.load(open(spec_path))
+        try:
+            spec = json.load(open(spec_path))
+        except FileNotFoundError:
+            print(f"no spec at {spec_path}; run a live pass first",
+                  flush=True)
+            return 2
+        except json.JSONDecodeError as e:
+            print(f"spec corrupt: {e}; refusing", flush=True)
+            return 2
         spec_dir = os.path.dirname(os.path.abspath(spec_path))
         md = args.report or os.path.join(spec_dir, "REPORT.md")
         tx = args.report_txt or os.path.join(spec_dir, "REPORT.txt")
@@ -749,8 +838,12 @@ def main():
     os.makedirs(CORPUS, exist_ok=True)
 
     def save(name, data):
-        with open(os.path.join(CORPUS, name), "wb") as f:
+        # Atomic even for gitignored fetch cache: a truncated write must
+        # never poison a later --spec-only run that reads this corpus.
+        tmp = os.path.join(CORPUS, name + ".tmp")
+        with open(tmp, "wb") as f:
             f.write(data or b"")
+        os.replace(tmp, os.path.join(CORPUS, name))
 
     discovery = {}
     if not args.no_fetch_sources and not args.spec_only:
@@ -772,8 +865,18 @@ def main():
         print("      version:", discovery["cli"].get("version"),
               "paths:", len(discovery["cli"].get("paths", [])),
               flush=True)
-        with open(os.path.join(CORPUS, "discovery.json"), "w") as f:
-            json.dump(discovery, f, indent=2)
+        derrs = []
+        if not (discovery.get("sitemap") or {}).get("urls"):
+            derrs.append("empty sitemap (offline?)")
+        if not (discovery.get("cli") or {}).get("version"):
+            derrs.append("CLI version unresolved (registry down?)")
+        if derrs and not args.force:
+            print("REFUSING to overwrite discovery snapshot:", flush=True)
+            for e in derrs:
+                print(f"  - {e}", flush=True)
+            return 2
+        atomic_write(os.path.join(CORPUS, "discovery.json"),
+                     json.dumps(discovery, indent=2))
     else:
         try:
             discovery = json.load(open(os.path.join(CORPUS,
@@ -817,10 +920,24 @@ def main():
             print(f"  {r['get_status']} "
                   f"{('POST:' + str(r['post_status'])) if r['post_status'] else '':10}"
                   f" {url} [{fl or 'no-signal'}]", flush=True)
-        with open(os.path.join(CORPUS, "probes.json"), "w") as f:
-            json.dump(probe_results, f, indent=2)
+        if not any(r["flags"].get("model_listing")
+                   for r in probe_results) and not args.force:
+            print("REFUSING to overwrite probes snapshot: "
+                  "model listing missing (API down?)", flush=True)
+            return 2
+        atomic_write(os.path.join(CORPUS, "probes.json"),
+                     json.dumps(probe_results, indent=2))
     else:
-        probe_results = json.load(open(os.path.join(CORPUS, "probes.json")))
+        try:
+            probe_results = json.load(open(os.path.join(CORPUS,
+                                                        "probes.json")))
+        except FileNotFoundError:
+            print(f"no probes snapshot in {CORPUS}; run a live pass "
+                  "first (no --spec-only)", flush=True)
+            return 2
+        except json.JSONDecodeError as e:
+            print(f"probes snapshot corrupt: {e}; refusing", flush=True)
+            return 2
 
     spec = build_spec(probe_results, {
         "sitemap_urls": len((discovery.get("sitemap") or {}).get("urls",
@@ -829,9 +946,31 @@ def main():
         "asset_js": (discovery.get("assets") or {}).get("assets"),
         "cli_version": (discovery.get("cli") or {}).get("version"),
     })
+    # ---- validation gates: good data is never overwritten by bad/empty ----
+    prior = None
+    if os.path.exists(args.out):
+        try:
+            prior = json.load(open(args.out))
+        except Exception as e:
+            print(f"prior spec unreadable ({e}); treating as no prior",
+                  flush=True)
+    errors, warnings = validate_spec(spec, prior)
+    for w in warnings:
+        print(f"WARNING: {w}", flush=True)
+    if errors and not args.force:
+        print("REFUSING to overwrite spec/reports:", flush=True)
+        for e in errors:
+            print(f"  - {e}", flush=True)
+        print("kept previous outputs; fix the cause or pass --force",
+              flush=True)
+        return 2
+    for e in errors:
+        print(f"WARNING (--force): {e}", flush=True)
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
-    with open(args.out, "w") as f:
-        json.dump(spec, f, indent=2)
+    if prior is not None:
+        atomic_write(args.out + ".prev.json",
+                     json.dumps(prior, indent=2))
+    atomic_write(args.out, json.dumps(spec, indent=2))
 
     print("\n=== endpoints carrying model listing / prices / deals ===")
     for e in spec["interesting_endpoints"]:

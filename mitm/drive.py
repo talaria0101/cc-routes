@@ -23,6 +23,13 @@ import argparse
 import json
 import os
 import re
+
+
+def atomic_write(path, data):
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        f.write(data)
+    os.replace(tmp, path)
 import shutil
 import subprocess
 import sys
@@ -75,6 +82,28 @@ def latest_version():
     return meta["version"]
 
 
+def ensure_netlog(work):
+    """Build the LD_PRELOAD egress tap if a C toolchain exists."""
+    out = os.path.join(work, "netlog.so")
+    src = os.path.join(HERE, "netlog.c")
+    if os.path.exists(out) and os.path.getmtime(out) >= \
+            os.path.getmtime(src):
+        return out
+    cc = shutil.which("gcc") or shutil.which("cc")
+    if not cc:
+        print("no C toolchain: netlog tap disabled", flush=True)
+        return None
+    r = subprocess.run(
+        [cc, "-shared", "-fPIC", "-O2", "-o", out, src, "-ldl"],
+        capture_output=True, timeout=120)
+    if r.returncode != 0:
+        print("netlog build failed; tap disabled:",
+              r.stderr.decode()[-500:], flush=True)
+        return None
+    print(f"netlog tap: {out}", flush=True)
+    return out
+
+
 def ensure_npm(work):
     """Return a working `npm` (node npm-cli.js). Bootstraps portable npm."""
     for cand in ("npm",):
@@ -115,7 +144,7 @@ def setup_cli(work, version, npm):
     pj = os.path.join(pkgdir, "package.json")
     d = json.load(open(pj))
     d.pop("devDependencies", None)  # private build-time packages; 404 public
-    json.dump(d, open(pj, "w"), indent=2)
+    atomic_write(pj, json.dumps(d, indent=2))
     print("npm install (production) ...", flush=True)
     r = subprocess.run(
         npm + ["install", "--no-audit", "--no-fund", "--omit=dev",
@@ -124,7 +153,7 @@ def setup_cli(work, version, npm):
     if r.returncode != 0:
         print(r.stderr.decode()[-2000:], file=sys.stderr)
         raise SystemExit("npm install failed")
-    open(marker, "w").write(json.dumps({"version": version, "ts": time.time()}))
+    atomic_write(marker, json.dumps({"version": version, "ts": time.time()}))
     return os.path.join(pkgdir, "dist", "cli.mjs")
 
 
@@ -144,7 +173,15 @@ def run_one(runner, cli, args, timeout, logpath, homedir, bindir, bindir_shim):
     # NODE_OPTIONS is always set so node-based children (npm, git hooks,
     # editors) inherit the hook too; the __ccHookLoaded guard prevents
     # double-wrapping if a runtime honors both preload and NODE_OPTIONS.
+    # LD_PRELOAD tap (when built) rides along the same way: it sees
+    # every egress from CLI and children alike, hook or no hook.
     env["NODE_OPTIONS"] = "--import " + HOOK
+    netlog = env.get("CC_NETLOG_SO")
+    if netlog:
+        env["LD_PRELOAD"] = netlog + \
+            (os.pathsep + env["LD_PRELOAD"] if env.get("LD_PRELOAD")
+             else "")
+        env["CC_NETLOG"] = logpath.replace(".jsonl", ".net.log")
     if runner == "bun":
         cmd = ["bun", "--preload", HOOK, cli] + args
     else:
@@ -197,6 +234,10 @@ def main():
     print(f"CLI version: {version}", flush=True)
     npm = ensure_npm(args.work)
     cli = setup_cli(args.work, version, npm)
+    netlog = ensure_netlog(args.work)
+    if netlog:
+        os.environ["CC_NETLOG_SO"] = netlog
+        # NOTE: run_one copies os.environ, so this propagates.
 
     only = None
     if args.only:
@@ -214,8 +255,8 @@ def main():
     npm_cli = os.path.join(args.work, "portable-npm", "package",
                            "bin", "npm-cli.js")
     node_bin = shutil.which("node")
-    with open(os.path.join(shimdir, "npm"), "w") as f:
-        f.write(f"#!/bin/sh\nexec {node_bin} {npm_cli} \"$@\"\n")
+    atomic_write(os.path.join(shimdir, "npm"),
+                 f"#!/bin/sh\nexec {node_bin} {npm_cli} \"$@\"\n")
     os.chmod(os.path.join(shimdir, "npm"), 0o755)
     for i, (cmd_args, t) in enumerate(MATRIX):
         if only is not None and i not in only:
@@ -244,8 +285,8 @@ def main():
         manifest["runs"].append(rec)
     manifest["finished"] = time.strftime("%Y-%m-%dT%H:%M:%SZ",
                                          time.gmtime())
-    with open(os.path.join(args.captures, "manifest.json"), "w") as f:
-        json.dump(manifest, f, indent=2)
+    atomic_write(os.path.join(args.captures, "manifest.json"),
+                 json.dumps(manifest, indent=2))
     print(f"done: {len(manifest['runs'])} runs -> {args.captures}")
 
 
